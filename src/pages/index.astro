@@ -1,0 +1,220 @@
+---
+// ES Yaşam - Hoş Geldiniz Açılış Sayfası
+---
+
+<html lang="tr">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="generator" content={Astro.generator} />
+		<title>ES Yaşam - Daha güzel bir yaşam için</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		<style>
+			:root {
+				--brand-gold: #d4af37;
+				--brand-gold-dark: #c5a028;
+				--brand-olive: #556b2f;
+				--brand-olive-light: #8fbc8f;
+				--bg-cream: #FAF8F5;
+				--bg-cream-dark: #F5F2EB;
+				--text-dark: #2c2520;
+				--text-muted: #6e645e;
+			}
+
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				font-family: 'Outfit', sans-serif;
+				background: radial-gradient(circle at top, var(--bg-cream) 0%, var(--bg-cream-dark) 100%);
+				color: var(--text-dark);
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				overflow-x: hidden;
+				position: relative;
+			}
+
+			/* Arka Plan Yaprak Süslemeleri */
+			body::before, body::after {
+				content: '';
+				position: absolute;
+				width: 300px;
+				height: 300px;
+				opacity: 0.08;
+				background-image: radial-gradient(var(--brand-olive) 1px, transparent 1px);
+				background-size: 24px 24px;
+				pointer-events: none;
+			}
+			body::before { top: 5%; left: 5%; }
+			body::after { bottom: 5%; right: 5%; }
+
+			.container {
+				max-width: 600px;
+				width: 90%;
+				text-align: center;
+				padding: 3rem 2rem;
+				border-radius: 24px;
+				background: rgba(255, 255, 255, 0.4);
+				backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
+				border: 1px solid rgba(212, 175, 55, 0.15);
+				box-shadow: 0 20px 50px rgba(44, 37, 32, 0.05);
+				animation: fadeIn 1s ease-out;
+			}
+
+			.logo-wrapper {
+				position: relative;
+				display: inline-block;
+				margin-bottom: 2rem;
+			}
+
+			.logo-ring {
+				position: absolute;
+				top: -10px;
+				left: -10px;
+				right: -10px;
+				bottom: -10px;
+				border: 2px dashed rgba(212, 175, 55, 0.3);
+				border-radius: 50%;
+				animation: rotate 40s linear infinite;
+			}
+
+			.logo-img {
+				width: 150px;
+				height: 150px;
+				border-radius: 50%;
+				object-fit: cover;
+				border: 3px solid var(--brand-gold);
+				box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+			}
+
+			h1 {
+				font-size: 2.5rem;
+				font-weight: 600;
+				color: var(--text-dark);
+				margin-bottom: 0.5rem;
+				letter-spacing: -0.5px;
+			}
+
+			h1 span {
+				color: var(--brand-gold-dark);
+			}
+
+			.slogan {
+				font-size: 1.1rem;
+				font-weight: 400;
+				font-style: italic;
+				color: var(--brand-olive);
+				margin-bottom: 2rem;
+			}
+
+			.divider {
+				width: 60px;
+				height: 3px;
+				background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
+				margin: 1.5rem auto;
+			}
+
+			.success-badge {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				background: rgba(85, 107, 47, 0.1);
+				color: var(--brand-olive);
+				padding: 0.5rem 1.2rem;
+				border-radius: 50px;
+				font-size: 0.9rem;
+				font-weight: 500;
+				margin-bottom: 1.5rem;
+				border: 1px solid rgba(85, 107, 47, 0.15);
+			}
+
+			p.desc {
+				font-size: 1rem;
+				line-height: 1.6;
+				color: var(--text-muted);
+				margin-bottom: 2.5rem;
+			}
+
+			.btn {
+				display: inline-block;
+				width: 100%;
+				padding: 1rem 2rem;
+				background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+				color: white;
+				text-decoration: none;
+				border-radius: 12px;
+				font-weight: 600;
+				font-size: 1rem;
+				box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+				transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+				border: none;
+				cursor: pointer;
+			}
+
+			.btn:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
+			}
+
+			.btn:active {
+				transform: translateY(-1px);
+			}
+
+			.footer {
+				margin-top: 3rem;
+				font-size: 0.85rem;
+				color: var(--text-muted);
+				opacity: 0.8;
+			}
+
+			@keyframes fadeIn {
+				from { opacity: 0; transform: translateY(20px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+
+			@keyframes rotate {
+				100% { transform: rotate(360deg); }
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="logo-wrapper">
+				<div class="logo-ring"></div>
+				<img src="/images/logo.jpg" alt="ES Yaşam Logo" class="logo-img" />
+			</div>
+
+			<div class="success-badge">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+				Astro Projesi Başarıyla Kuruldu
+			</div>
+
+			<h1>ES <span>Yaşam</span></h1>
+			<p class="slogan">"Daha güzel bir yaşam için"</p>
+			
+			<div class="divider"></div>
+
+			<p class="desc">
+				Leke Çıkartıcı, Sarı Güç ve Mavi Güç lansman ürünlerimiz için hazırlanan ultra-premium, yüksek dönüşümlü e-ticaret satış sayfamıza hoş geldiniz. Ürünlerimizi incelemek, güncel duyuruları takip etmek ve sipariş vermek için bizi sosyal medyada takip edebilirsiniz.
+			</p>
+
+			<a href="https://instagram.com/es_yasam" target="_blank" class="btn">
+				Bizi Instagram'da Keşfedin: @es_yasam
+			</a>
+		</div>
+
+		<div class="footer">
+			© 2026 ES Yaşam & Uçbeyi Gıda. Tüm hakları saklıdır.
+		</div>
+	</body>
+</html>

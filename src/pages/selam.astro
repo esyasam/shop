@@ -1,0 +1,155 @@
+---
+// ES Yaşam - Selam Sayfası
+---
+
+<html lang="tr">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Selam - ES Yaşam</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		<style>
+			:root {
+				--brand-gold: #d4af37;
+				--brand-gold-dark: #c5a028;
+				--brand-olive: #556b2f;
+				--brand-olive-light: #8fbc8f;
+				--bg-cream: #FAF8F5;
+				--bg-cream-dark: #F5F2EB;
+				--text-dark: #2c2520;
+				--text-muted: #6e645e;
+			}
+
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				font-family: 'Outfit', sans-serif;
+				background: radial-gradient(circle at top, var(--bg-cream) 0%, var(--bg-cream-dark) 100%);
+				color: var(--text-dark);
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				overflow-x: hidden;
+				position: relative;
+			}
+
+			.container {
+				max-width: 600px;
+				width: 90%;
+				text-align: center;
+				padding: 3rem 2rem;
+				border-radius: 24px;
+				background: rgba(255, 255, 255, 0.4);
+				backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
+				border: 1px solid rgba(212, 175, 55, 0.15);
+				box-shadow: 0 20px 50px rgba(44, 37, 32, 0.05);
+				animation: fadeIn 1s ease-out;
+			}
+
+			.logo-wrapper {
+				position: relative;
+				display: inline-block;
+				margin-bottom: 2rem;
+			}
+
+			.logo-img {
+				width: 120px;
+				height: 120px;
+				border-radius: 50%;
+				object-fit: cover;
+				border: 3px solid var(--brand-gold);
+				box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+			}
+
+			h1 {
+				font-size: 2.2rem;
+				font-weight: 600;
+				color: var(--text-dark);
+				margin-bottom: 1rem;
+			}
+
+			h1 span {
+				color: var(--brand-gold-dark);
+			}
+
+			.welcome-msg {
+				font-size: 1.2rem;
+				font-weight: 500;
+				color: var(--brand-olive);
+				margin-bottom: 1.5rem;
+			}
+
+			p.desc {
+				font-size: 1rem;
+				line-height: 1.6;
+				color: var(--text-muted);
+				margin-bottom: 2.5rem;
+			}
+
+			.btn {
+				display: inline-block;
+				width: 100%;
+				padding: 1rem 2rem;
+				background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+				color: white;
+				text-decoration: none;
+				border-radius: 12px;
+				font-weight: 600;
+				font-size: 1rem;
+				box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+				transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+				border: none;
+				cursor: pointer;
+			}
+
+			.btn:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
+			}
+
+			.footer {
+				margin-top: 3rem;
+				font-size: 0.85rem;
+				color: var(--text-muted);
+				opacity: 0.8;
+			}
+
+			@keyframes fadeIn {
+				from { opacity: 0; transform: translateY(20px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="logo-wrapper">
+				<img src="/images/logo.jpg" alt="ES Yaşam Logo" class="logo-img" />
+			</div>
+
+			<h1>ES Yaşam'dan <span>Selamlar!</span></h1>
+			<p class="welcome-msg">"Daha güzel bir yaşam için buradayız."</p>
+			
+			<p class="desc">
+				Bu sayfa, GitHub ve Cloudflare Pages entegrasyonumuzun sorunsuz çalıştığını test etmek amacıyla oluşturulmuş geçici bir selamlaşma sayfasıdır.
+			</p>
+
+			<a href="/" class="btn">
+				Ana Sayfaya Dön
+			</a>
+		</div>
+
+		<div class="footer">
+			© 2026 ES Yaşam & Uçbeyi Gıda. Tüm hakları saklıdır.
+		</div>
+	</body>
+</html>
