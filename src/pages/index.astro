@@ -834,6 +834,68 @@ function getInstagramDmUrl(productName, customLink) {
         border-color: var(--brand-gold);
         transform: translateX(-3px);
       }
+
+      /* Premium Adet Seçici (Quantity Selector) */
+      .product-quantity-selector {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, rgba(85, 107, 47, 0.04) 0%, rgba(59, 78, 24, 0.07) 100%);
+        border: 2px solid var(--brand-gold);
+        border-radius: 14px;
+        padding: 0.5rem 0.8rem;
+        height: 52px;
+        box-sizing: border-box;
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        width: 100%;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .product-quantity-selector:hover {
+        box-shadow: 0 12px 28px rgba(212, 175, 55, 0.2);
+        border-color: var(--brand-gold-dark, #c5a028);
+      }
+
+      .btn-qty-action {
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
+        padding: 0;
+      }
+
+      .btn-qty-action:hover {
+        transform: scale(1.12);
+        box-shadow: 0 6px 14px rgba(212, 175, 55, 0.35);
+      }
+
+      .btn-qty-action:active {
+        transform: scale(0.9);
+      }
+
+      .qty-display {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--brand-olive-dark, #3b4e18);
+        min-width: 35px;
+        text-align: center;
+        user-select: none;
+        display: inline-block;
+      }
     </style>
   </head>
   <body>
@@ -989,348 +1051,54 @@ function getInstagramDmUrl(productName, customLink) {
       let currentSlideIndex = 0;
 
       // ==========================================
-      function addToCart(id, name, price, image, quantity = 1) {
-        const existing = cart.find(item => item.id === id);
-        if (existing) {
-          existing.quantity += quantity;
-        } else {
-          cart.push({ id, name, price: parseFloat(price), image, quantity });
-        }
-        saveCart();
-        showToast(`"${name}" sepete eklendi!`, 'success');
-      }
-
-      function updateItemQty(id, change) {
-        const item = cart.find(item => item.id === id);
-        if (!item) return;
-
-        item.quantity += change;
-        if (item.quantity <= 0) {
-          cart = cart.filter(item => item.id !== id);
-        }
-        saveCart();
-        renderCart();
-      }
-
-      function removeItem(id) {
-        const item = cart.find(item => item.id === id);
-        if (!item) return;
-        cart = cart.filter(item => item.id !== id);
-        saveCart();
-        renderCart();
-        showToast(`"${item.name}" sepetten çıkarıldı.`, 'info');
-      }
-
+      // PRODUCT GRID BUTTON GENERATORS & HANDLERS
       // ==========================================
-      // CART DRAWER RENDER
-      // ==========================================
-      function updateStepper(step) {
-        const step1 = document.getElementById('step-1-indicator');
-        const step2 = document.getElementById('step-2-indicator');
-        const progress = document.getElementById('stepper-progress');
-        if (!step1 || !step2 || !progress) return;
-
-        if (step === 1) {
-          step1.className = 'stepper-step active';
-          step2.className = 'stepper-step';
-          progress.style.width = '0%';
-        } else if (step === 2) {
-          step1.className = 'stepper-step completed';
-          step2.className = 'stepper-step active';
-          progress.style.width = '100%';
-        }
-      }
-
-      function renderCart() {
-        const drawerBody = document.querySelector('#cart-drawer .drawer-body');
-        if (!drawerBody) return;
-
-        // Toggle stepper visibility
-        const stepper = document.querySelector('#cart-drawer .checkout-stepper');
-        if (stepper) {
-          stepper.style.display = cart.length === 0 ? 'none' : 'flex';
-        }
-
-        if (cart.length === 0) {
-          drawerBody.innerHTML = `
-            <div class="empty-cart-view">
-              <div class="empty-cart-icon-container">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="9" cy="21" r="1"></circle>
-                  <circle cx="20" cy="21" r="1"></circle>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                </svg>
-              </div>
-              <h4 class="empty-cart-title">Sepetiniz Boş</h4>
-              <p class="empty-cart-text">Doğal ve lüks formüllere sahip ürünlerimizden dilediğinizi ekleyip siparişinizi oluşturun!</p>
-              <button class="btn-start-shopping">
-                <span>Alışverişe Başla</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </button>
-            </div>
-          `;
-          // Close drawer on "Alışverişe Başla" click
-          const startShopBtn = drawerBody.querySelector('.btn-start-shopping');
-          if (startShopBtn) {
-            startShopBtn.addEventListener('click', () => {
-              document.getElementById('cart-drawer').classList.remove('show');
-              document.body.classList.remove('modal-open');
-            });
-          }
-          return;
-        }
-
-        // Update stepper progress
-        updateStepper(1);
-
-        let cartItemsHtml = cart.map(item => `
-          <div class="cart-item" data-id="${item.id}">
-            <img src="${item.image}" alt="${item.name}" class="cart-item-img" />
-            <div class="cart-item-info">
-              <h4 class="cart-item-name">${item.name}</h4>
-              <div class="cart-item-price">${item.price} TL</div>
-            </div>
-            <div class="cart-item-controls">
-              <button class="btn-qty btn-minus" data-id="${item.id}">−</button>
-              <span class="qty-val">${item.quantity}</span>
-              <button class="btn-qty btn-plus" data-id="${item.id}">＋</button>
-            </div>
-            <button class="btn-remove" data-id="${item.id}" title="Sepetten Çıkar">
-              <svg viewBox="0 0 24 24">
-                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-              </svg>
-            </button>
-          </div>
-        `).join('');
-
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-        drawerBody.innerHTML = `
-          <div class="cart-items-list">
-            ${cartItemsHtml}
-          </div>
-          <div class="cart-summary">
-            <div class="summary-row">
-              <span class="summary-label">Toplam Tutar:</span>
-              <span class="summary-value">${total} TL</span>
-            </div>
-            <button class="btn-checkout-start">
-              <span>Siparişi Tamamla</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
+      function getGridQtySelectorHtml(id, name, price, image, qty) {
+        return `
+          <div class="product-quantity-selector" data-id="${id}" data-name="${name}" data-price="${price}" data-image="${image}">
+            <button class="btn-qty-action btn-qty-minus" data-id="${id}">−</button>
+            <span class="qty-display">${qty}</span>
+            <button class="btn-qty-action btn-qty-plus" data-id="${id}">＋</button>
           </div>
         `;
-
-        // Bind interactive elements in cart
-        drawerBody.querySelectorAll('.btn-minus').forEach(btn => {
-          btn.addEventListener('click', () => updateItemQty(btn.getAttribute('data-id'), -1));
-        });
-
-        drawerBody.querySelectorAll('.btn-plus').forEach(btn => {
-          btn.addEventListener('click', () => updateItemQty(btn.getAttribute('data-id'), 1));
-        });
-
-        drawerBody.querySelectorAll('.btn-remove').forEach(btn => {
-          btn.addEventListener('click', () => removeItem(btn.getAttribute('data-id')));
-        });
-
-        drawerBody.querySelector('.btn-checkout-start').addEventListener('click', renderCheckoutForm);
       }
 
-      // ==========================================
-      // CHECKOUT STEP FORM
-      // ==========================================
-      function renderCheckoutForm() {
-        const drawerBody = document.querySelector('#cart-drawer .drawer-body');
-        if (!drawerBody) return;
-
-        // Scroll to top of the drawer smoothly
-        drawerBody.scrollTop = 0;
-
-        // Update stepper progress
-        updateStepper(2);
-
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-        drawerBody.innerHTML = `
-          <button class="btn-back">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
+      function getGridAddButtonHtml(id, name, price, image) {
+        return `
+          <button class="btn-order btn-add-to-cart" 
+            data-id="${id}" 
+            data-name="${name}" 
+            data-price="${price}" 
+            data-image="${image}"
+          >
+            <span>Sepete Ekle</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
-            <span>Sepete Geri Dön</span>
           </button>
-
-          <div class="form-section-title">
-            <span>📦 Sipariş ve Kargo Bilgileri</span>
-          </div>
-
-          <form id="esyasam-order-form" class="checkout-form">
-            <div class="form-group">
-              <label for="order-fullname">Ad Soyad</label>
-              <input type="text" id="order-fullname" class="form-control" placeholder="Örn: Ahmet Yılmaz" required />
-              <span class="error-msg">Lütfen adınızı ve soyadınızı girin.</span>
-            </div>
-
-            <div class="form-group">
-              <label for="order-phone">Telefon Numarası</label>
-              <input type="tel" id="order-phone" class="form-control" placeholder="Örn: 0555 123 4567" required />
-              <span class="error-msg">Geçerli bir telefon numarası girin.</span>
-            </div>
-
-            <div class="form-group">
-              <label for="order-tc">T.C. Kimlik Numarası</label>
-              <input type="text" id="order-tc" class="form-control" maxlength="11" placeholder="Kargo ve fatura zorunluluğu" required />
-              <span class="error-msg">Lütfen 11 haneli geçerli T.C. Kimlik numaranızı girin.</span>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="order-city">İl</label>
-                <input type="text" id="order-city" class="form-control" placeholder="İl" required />
-                <span class="error-msg">İl giriniz.</span>
-              </div>
-              <div class="form-group">
-                <label for="order-district">İlçe</label>
-                <input type="text" id="order-district" class="form-control" placeholder="İlçe" required />
-                <span class="error-msg">İlçe giriniz.</span>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="order-address">Açık Adres</label>
-              <textarea id="order-address" class="form-control" rows="3" placeholder="Mahalle, cadde, sokak, bina ve kapı no" required></textarea>
-              <span class="error-msg">Lütfen açık adresinizi girin.</span>
-            </div>
-
-            <div class="form-group">
-              <label for="order-note">Sipariş Notu (Opsiyonel)</label>
-              <input type="text" id="order-note" class="form-control" placeholder="Varsa kargo veya ürün notunuz..." />
-            </div>
-
-            <div style="margin-top: 1rem; border-top: 1px dashed rgba(212, 175, 55, 0.2); padding-top: 1rem;">
-              <div class="summary-row" style="margin-bottom: 1rem;">
-                <span class="summary-label" style="font-size: 1rem;">Toplam Tutar:</span>
-                <span class="summary-value" style="font-size: 1.3rem;">${total} TL</span>
-              </div>
-              <button type="submit" class="btn-submit-order">
-                <span>Instagram ile Siparişi Tamamla</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
-            </div>
-          </form>
         `;
-
-        // Back action
-        drawerBody.querySelector('.btn-back').addEventListener('click', renderCart);
-
-        // Numeric constraint for TC
-        const tcInput = document.getElementById('order-tc');
-        if (tcInput) {
-          tcInput.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^\d]/g, '');
-          });
-        }
-
-        // Form submit
-        const form = document.getElementById('esyasam-order-form');
-        if (form) {
-          form.addEventListener('submit', handleOrderSubmit);
-        }
       }
 
-      function handleOrderSubmit(e) {
-        e.preventDefault();
-
-        const fullnameInput = document.getElementById('order-fullname');
-        const phoneInput = document.getElementById('order-phone');
-        const tcInput = document.getElementById('order-tc');
-        const cityInput = document.getElementById('order-city');
-        const districtInput = document.getElementById('order-district');
-        const addressInput = document.getElementById('order-address');
-        const noteInput = document.getElementById('order-note');
-
-        let isValid = true;
-
-        [fullnameInput, phoneInput, cityInput, districtInput, addressInput].forEach(input => {
-          if (!input.value.trim()) {
-            input.classList.add('invalid');
-            isValid = false;
+      function updatePageProductButtons(cartList) {
+        if (!cartList) return;
+        document.querySelectorAll('.product-action-wrapper').forEach(wrapper => {
+          const id = wrapper.getAttribute('data-id');
+          const name = wrapper.getAttribute('data-name');
+          const price = wrapper.getAttribute('data-price');
+          const image = wrapper.getAttribute('data-image');
+          
+          const cartItem = cartList.find(item => item.id === id);
+          if (cartItem) {
+            wrapper.innerHTML = getGridQtySelectorHtml(id, name, price, image, cartItem.quantity);
           } else {
-            input.classList.remove('invalid');
+            wrapper.innerHTML = getGridAddButtonHtml(id, name, price, image);
           }
         });
-
-        const tcVal = tcInput.value.trim();
-        if (!tcVal || tcVal.length !== 11 || isNaN(tcVal)) {
-          tcInput.classList.add('invalid');
-          isValid = false;
-        } else {
-          tcInput.classList.remove('invalid');
-        }
-
-        if (!isValid) {
-          showToast('Lütfen formdaki tüm alanları doğru şekilde doldurun.', 'error');
-          return;
-        }
-
-        const itemsText = cart.map(item => `- ${item.quantity}x ${item.name} (${item.price * item.quantity} TL)`).join('\n');
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-        const orderMessage = `🌟 ES YAŞAM - YENİ SİPARİŞ TALEBİ 🌟
-----------------------------------
-📦 SİPARİŞ VERİLEN ÜRÜNLER:
-${itemsText}
-
-💰 TOPLAM TUTAR: ${total} TL
-----------------------------------
-👤 ALICI KİMLİK & İLETİŞİM BİLGİLERİ:
-Ad Soyad: ${fullnameInput.value.trim()}
-Telefon: ${phoneInput.value.trim()}
-T.C. Kimlik No: ${tcVal}
-
-📍 TESLİMAT ADRESİ:
-${addressInput.value.trim()} - ${districtInput.value.trim()} / ${cityInput.value.trim().toUpperCase()}
-
-📝 MÜŞTERİ NOTU:
-${noteInput.value.trim() || 'Yok'}
-----------------------------------
-Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
-
-        // Copy to clipboard
-        navigator.clipboard.writeText(orderMessage)
-          .then(() => {
-            showToast('Sipariş detaylarınız kopyalandı! Instagram DM kutusuna yönlendiriliyorsunuz...', 'success');
-
-            // Reset cart
-            cart = [];
-            saveCart();
-
-            // Close Drawer
-            document.getElementById('cart-drawer').classList.remove('show');
-            document.body.classList.remove('modal-open');
-
-            // Open Instagram DM
-            setTimeout(() => {
-              const baseIntro = `Merhaba, web siteniz üzerinden sipariş bilgilerimi oluşturdum ve kopyaladım. Şimdi buraya yapıştırıp siparişimi başlatıyorum!`;
-              window.open(`https://ig.me/m/es_yasam?text=${encodeURIComponent(baseIntro)}`, '_blank');
-            }, 1500);
-          })
-          .catch(err => {
-            console.error('Kopyalama hatası:', err);
-            showToast('Instagram DM kutusuna aktarılıyorsunuz...', 'success');
-            setTimeout(() => {
-              window.open('https://ig.me/m/es_yasam', '_blank');
-            }, 1500);
-          });
       }
+
+
 
       // ==========================================
       // PRODUCT DETAILS SLIDESHOW LOGIC
@@ -1396,45 +1164,62 @@ Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
       }
 
       // ==========================================
-      // WINDOW LOAD & INITIAL BINDINGS
+      // WINDOW LOAD & INITIAL BINDINGS (EVENT DELEGATION)
       // ==========================================
       window.addEventListener('DOMContentLoaded', () => {
-        loadCart();
-
-        // 1. Floating Cart Click
-        const floatCartBtn = document.getElementById('floating-cart');
-        const cartDrawer = document.getElementById('cart-drawer');
-        if (floatCartBtn && cartDrawer) {
-          floatCartBtn.addEventListener('click', () => {
-            renderCart();
-            cartDrawer.classList.add('show');
-            document.body.classList.add('modal-open');
-          });
+        // Render buttons based on loaded cart state
+        if (window.cart) {
+          updatePageProductButtons(window.cart);
         }
 
-        // 2. Drawer Backdrop and Close Click
-        const drawerCloseBtn = document.querySelector('#cart-drawer .drawer-close');
-        const drawerBackdrop = document.querySelector('#cart-drawer .drawer-backdrop');
-        if (cartDrawer) {
-          [drawerCloseBtn, drawerBackdrop].forEach(el => {
-            if (el) el.addEventListener('click', () => {
-              cartDrawer.classList.remove('show');
-              document.body.classList.remove('modal-open');
-            });
-          });
-        }
+        // Listen to custom cart updates
+        window.addEventListener('cart-updated', (e) => {
+          updatePageProductButtons(e.detail.cart);
+        });
 
-        // 3. Add to Cart Instant Button on Grid Card
-        document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent navigating to detail page!
-            e.stopPropagation(); // Prevent card trigger
-            const id = btn.getAttribute('data-id');
-            const name = btn.getAttribute('data-name');
-            const price = btn.getAttribute('data-price');
-            const image = btn.getAttribute('data-image');
-            addToCart(id, name, price, image);
-          });
+        // 1. Add to Cart and Quantity Actions via Event Delegation
+        document.addEventListener('click', (e) => {
+          // Add to cart click
+          const addBtn = e.target.closest('.btn-add-to-cart');
+          if (addBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const wrapper = addBtn.closest('.product-action-wrapper');
+            if (wrapper) {
+              const id = wrapper.getAttribute('data-id');
+              const name = wrapper.getAttribute('data-name');
+              const price = wrapper.getAttribute('data-price');
+              const image = wrapper.getAttribute('data-image');
+              if (window.addToCart) {
+                window.addToCart(id, name, price, image);
+              }
+            }
+            return;
+          }
+
+          // Minus click
+          const minusBtn = e.target.closest('.btn-qty-minus');
+          if (minusBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = minusBtn.getAttribute('data-id');
+            if (window.updateItemQty) {
+              window.updateItemQty(id, -1);
+            }
+            return;
+          }
+
+          // Plus click
+          const plusBtn = e.target.closest('.btn-qty-plus');
+          if (plusBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = plusBtn.getAttribute('data-id');
+            if (window.updateItemQty) {
+              window.updateItemQty(id, 1);
+            }
+            return;
+          }
         });
       });
     </script>

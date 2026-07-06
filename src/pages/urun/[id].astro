@@ -1249,6 +1249,80 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         from { opacity: 0; transform: translateY(35px); }
         to { opacity: 1; transform: translateY(0); }
       }
+
+      /* Premium Adet Seçici (Product Detail Page) */
+      .detail-action-wrapper {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .detail-quantity-selector {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, rgba(85, 107, 47, 0.04) 0%, rgba(59, 78, 24, 0.07) 100%);
+        border: 2px solid var(--brand-gold);
+        border-radius: 16px;
+        padding: 0.5rem 0.8rem;
+        height: 58px;
+        box-sizing: border-box;
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        width: 100%;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .detail-quantity-selector:hover {
+        box-shadow: 0 12px 28px rgba(212, 175, 55, 0.2);
+        border-color: var(--brand-gold-dark, #c5a028);
+      }
+
+      .btn-qty-action {
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        color: white;
+        border: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
+        padding: 0;
+      }
+
+      .btn-qty-action:hover {
+        transform: scale(1.12);
+        box-shadow: 0 6px 14px rgba(212, 175, 55, 0.35);
+      }
+
+      .btn-qty-action:active {
+        transform: scale(0.9);
+      }
+
+      .qty-display {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--brand-olive-dark, #3b4e18);
+        min-width: 45px;
+        text-align: center;
+        user-select: none;
+        display: inline-block;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
     </style>
   </head>
   <body>
@@ -1363,14 +1437,21 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
 
           <!-- Eylemler / CTA Butonları -->
           <div class="detail-actions-group">
-            <button class="btn-detail-add-cart" id="add-to-cart-btn" data-id={product.id} data-name={product.name} data-price={currentPrice} data-image={mainImage}>
-              <span>Sepete Ekle</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-            </button>
+            <div class="detail-action-wrapper"
+              data-id={product.id}
+              data-name={product.name}
+              data-price={currentPrice}
+              data-image={mainImage}
+            >
+              <button class="btn-detail-add-cart" id="add-to-cart-btn" data-id={product.id} data-name={product.name} data-price={currentPrice} data-image={mainImage}>
+                <span>Sepete Ekle</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+              </button>
+            </div>
 
             <button class="btn-detail-instant-checkout" id="instant-checkout-btn" data-id={product.id} data-name={product.name} data-price={currentPrice} data-image={mainImage}>
               <span>Hemen Al & Sipariş Ver</span>
@@ -1548,9 +1629,63 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
       }
 
       // ==========================================
+      // PRODUCT DETAIL ACTION GENERATORS
+      // ==========================================
+      function getDetailQtySelectorHtml(id, name, price, image, qty) {
+        return `
+          <div class="detail-quantity-selector" data-id="${id}" data-name="${name}" data-price="${price}" data-image="${image}">
+            <button class="btn-qty-action btn-qty-minus" data-id="${id}">−</button>
+            <span class="qty-display">${qty} Adet</span>
+            <button class="btn-qty-action btn-qty-plus" data-id="${id}">＋</button>
+          </div>
+        `;
+      }
+
+      function getDetailAddButtonHtml(id, name, price, image) {
+        return `
+          <button class="btn-detail-add-cart" id="add-to-cart-btn" data-id="${id}" data-name="${name}" data-price="${price}" data-image="${image}">
+            <span>Sepete Ekle</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+          </button>
+        `;
+      }
+
+      function updateDetailPageButton(cartList) {
+        if (!cartList) return;
+        const wrapper = document.querySelector('.detail-action-wrapper');
+        if (!wrapper) return;
+
+        const id = wrapper.getAttribute('data-id');
+        const name = wrapper.getAttribute('data-name');
+        const price = wrapper.getAttribute('data-price');
+        const image = wrapper.getAttribute('data-image');
+        
+        const cartItem = cartList.find(item => item.id === id);
+        if (cartItem) {
+          wrapper.innerHTML = getDetailQtySelectorHtml(id, name, price, image, cartItem.quantity);
+        } else {
+          wrapper.innerHTML = getDetailAddButtonHtml(id, name, price, image);
+        }
+      }
+
+      // ==========================================
       // INITIAL BINDINGS ON LOAD
       // ==========================================
       window.addEventListener('DOMContentLoaded', () => {
+        // Render button based on loaded cart state
+        if (window.cart) {
+          updateDetailPageButton(window.cart);
+        }
+
+        // Listen to custom cart updates
+        window.addEventListener('cart-updated', (e) => {
+          updateDetailPageButton(e.detail.cart);
+        });
+
         // Slideshow controls
         const prevBtn = document.getElementById('prev-slide-btn');
         const nextBtn = document.getElementById('next-slide-btn');
@@ -1579,19 +1714,50 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
           });
         }
 
-        // Add to Cart Action
-        const addToCartBtn = document.getElementById('add-to-cart-btn');
-        if (addToCartBtn) {
-          addToCartBtn.addEventListener('click', () => {
-            const id = addToCartBtn.getAttribute('data-id');
-            const name = addToCartBtn.getAttribute('data-name');
-            const price = addToCartBtn.getAttribute('data-price');
-            const image = addToCartBtn.getAttribute('data-image');
-            if (window.addToCart) {
-              window.addToCart(id, name, price, image);
+        // Click Actions via Event Delegation
+        document.addEventListener('click', (e) => {
+          // Add to cart click
+          const addBtn = e.target.closest('.btn-detail-add-cart');
+          if (addBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const wrapper = addBtn.closest('.detail-action-wrapper');
+            if (wrapper) {
+              const id = wrapper.getAttribute('data-id');
+              const name = wrapper.getAttribute('data-name');
+              const price = wrapper.getAttribute('data-price');
+              const image = wrapper.getAttribute('data-image');
+              if (window.addToCart) {
+                window.addToCart(id, name, price, image);
+              }
             }
-          });
-        }
+            return;
+          }
+
+          // Minus click
+          const minusBtn = e.target.closest('.btn-qty-minus');
+          if (minusBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = minusBtn.getAttribute('data-id');
+            if (window.updateItemQty) {
+              window.updateItemQty(id, -1);
+            }
+            return;
+          }
+
+          // Plus click
+          const plusBtn = e.target.closest('.btn-qty-plus');
+          if (plusBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = plusBtn.getAttribute('data-id');
+            if (window.updateItemQty) {
+              window.updateItemQty(id, 1);
+            }
+            return;
+          }
+        });
 
         // Instant Checkout Action
         const instantCheckoutBtn = document.getElementById('instant-checkout-btn');
