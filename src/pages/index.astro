@@ -105,6 +105,24 @@ function getInstagramDmUrl(productName, customLink) {
         --text-muted: #6e645e;
       }
 
+      /* Premium Custom Scrollbars */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-cream-dark);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.3);
+        border-radius: 10px;
+        border: 2px solid var(--bg-cream-dark);
+        transition: background 0.3s ease;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--brand-gold);
+      }
+
       * {
         box-sizing: border-box;
         margin: 0;
@@ -833,7 +851,7 @@ function getInstagramDmUrl(productName, customLink) {
       }
 
       .floating-cart:hover {
-        transform: scale(1.1);
+        transform: scale(1.1) translateY(-3px);
         box-shadow: 0 15px 35px rgba(212, 175, 55, 0.45);
       }
 
@@ -1125,6 +1143,9 @@ function getInstagramDmUrl(productName, customLink) {
       }
 
       .btn-checkout-start, .btn-submit-order {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
         width: 100%;
         padding: 1.1rem 2rem;
         background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
@@ -1135,16 +1156,53 @@ function getInstagramDmUrl(productName, customLink) {
         font-weight: 700;
         cursor: pointer;
         box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.8rem;
       }
 
+      /* Premium Light-Sweep Shimmer Effect */
+      .btn-checkout-start::before, .btn-submit-order::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-25deg);
+        transition: 0.75s;
+        z-index: -1;
+      }
+
+      .btn-checkout-start:hover::before, .btn-submit-order:hover::before {
+        left: 150%;
+        transition: 0.75s;
+      }
+
       .btn-checkout-start:hover, .btn-submit-order:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(212, 175, 55, 0.35);
+      }
+
+      .btn-checkout-start:active, .btn-submit-order:active {
+        transform: translateY(-1px);
+      }
+
+      /* SVG Arrow Translate on Hover */
+      .btn-checkout-start svg, .btn-submit-order svg {
+        transition: transform 0.3s ease;
+      }
+
+      .btn-checkout-start:hover svg, .btn-submit-order:hover svg {
+        transform: translateX(4px);
       }
 
       /* Premium Checkout Form */
@@ -1528,15 +1586,11 @@ function getInstagramDmUrl(productName, customLink) {
               const originalPrice = hasCampaign ? salePriceNum : null;
               
               return (
-                <div 
+                <a 
+                  href={`/urun/${product.id}`}
                   class="product-card" 
                   id={`product-${product.id}`}
-                  data-id={product.id}
-                  data-name={product.name}
-                  data-price={currentPrice}
-                  data-images={product.image || ''}
-                  data-videos={product.video || ''}
-                  data-features={product.features || ''}
+                  style="text-decoration: none;"
                 >
                   {/* Rozet */}
                   <div class="badge">VİRAL ÜRÜN</div>
@@ -1581,7 +1635,7 @@ function getInstagramDmUrl(productName, customLink) {
                       </svg>
                     </button>
                   </div>
-                </div>
+                </a>
               );
             })
           )}
@@ -1706,16 +1760,6 @@ function getInstagramDmUrl(productName, customLink) {
       </div>
     </button>
 
-    <!-- ÜRÜN DETAY MODALI -->
-    <div id="product-detail-modal" class="modal">
-      <div class="modal-backdrop"></div>
-      <div class="modal-content">
-        <button class="modal-close">×</button>
-        <div class="modal-body">
-          <!-- Dinamik içerik yerleşecek -->
-        </div>
-      </div>
-    </div>
 
     <!-- SEPET VE SİPARİŞ ÇEKMECESİ -->
     <div id="cart-drawer" class="drawer">
@@ -1857,7 +1901,7 @@ function getInstagramDmUrl(productName, customLink) {
           drawerBody.innerHTML = `
             <div class="empty-cart-view">
               <span class="empty-cart-icon">🛒</span>
-              <h4 style="font-weight: 700;">Sepetiniz Boş</h4>
+              <h4 style="font-weight: 700; color: var(--text-dark);">Sepetiniz Boş</h4>
               <p class="empty-cart-text">Doğal ve lüks formüllere sahip ürünlerimizden dilediğinizi ekleyip siparişinizi oluşturun!</p>
             </div>
           `;
@@ -2164,143 +2208,6 @@ Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
       }
 
       // ==========================================
-      // PRODUCT DETAIL MODAL OPENER
-      // ==========================================
-      function openProductDetail(card) {
-        const modal = document.getElementById('product-detail-modal');
-        if (!modal) return;
-
-        const id = card.getAttribute('data-id');
-        const name = card.getAttribute('data-name');
-        const price = card.getAttribute('data-price');
-        const rawImages = card.getAttribute('data-images') || '';
-        const rawVideos = card.getAttribute('data-videos') || '';
-        const rawFeatures = card.getAttribute('data-features') || '';
-
-        const images = getProductImagesList(rawImages, id);
-        const videos = getProductVideosList(rawVideos);
-
-        const modalBody = modal.querySelector('.modal-body');
-        if (!modalBody) return;
-
-        let slidesHtml = images.map((img, i) => `
-          <img src="${img}" alt="${name} Görsel ${i+1}" class="slide-img ${i===0 ? 'active' : ''}" />
-        `).join('');
-
-        let dotsHtml = images.length > 1 ? `
-          <div class="slide-dots">
-            ${images.map((_, i) => `<span class="dot ${i===0 ? 'active' : ''}" data-index="${i}"></span>`).join('')}
-          </div>
-        ` : '';
-
-        let navBtnsHtml = images.length > 1 ? `
-          <button class="slide-btn slide-prev">❮</button>
-          <button class="slide-btn slide-next">❯</button>
-        ` : '';
-
-        let videosHtml = "";
-        if (videos.length > 0) {
-          videosHtml = `
-            <div class="modal-videos-title">🎥 Uygulama & Tanıtım Videoları</div>
-            <div class="modal-videos-list">
-              ${videos.map(vid => `
-                <div class="modal-video-item">
-                  <iframe src="${vid}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-              `).join('')}
-            </div>
-          `;
-        }
-
-        let featuresHtml = rawFeatures.split('\n').filter(Boolean).map(feature => `
-          <li style="margin-bottom: 0.6rem; display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.98rem; color: var(--text-muted);">
-            <span style="color: var(--brand-gold); font-weight: bold; flex-shrink: 0; margin-top: 1px;">✦</span>
-            <span>${feature.replace(/^[✓\s*-]+/, '')}</span>
-          </li>
-        `).join('');
-
-        modalBody.innerHTML = `
-          <div class="modal-grid">
-            <div class="modal-left">
-              <div class="slideshow-container">
-                ${slidesHtml}
-                ${navBtnsHtml}
-                ${dotsHtml}
-              </div>
-            </div>
-            
-            <div class="modal-right">
-              <h2 class="modal-title">${name}</h2>
-              <div class="price-box" style="margin-bottom: 1.2rem;">
-                <span class="price-sale" style="font-size: 2.2rem;">${price} TL</span>
-              </div>
-              
-              <ul style="list-style: none; margin-bottom: 1.8rem; flex-grow: 1;">
-                ${featuresHtml}
-              </ul>
-              
-              ${videosHtml}
-              
-              <div class="modal-actions">
-                <button class="btn-modal-add">
-                  <span>Sepete Ekle</span>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                  </svg>
-                </button>
-                
-                <button class="btn-modal-instant">
-                  <span>Tek Tıkla Siparişi Tamamla</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-
-        currentSlideIndex = 0;
-        showSlide(0);
-
-        // Bind slideshow interactions
-        if (images.length > 1) {
-          const prevBtn = modalBody.querySelector('.slide-prev');
-          const nextBtn = modalBody.querySelector('.slide-next');
-          if (prevBtn) prevBtn.addEventListener('click', () => showSlide(currentSlideIndex - 1));
-          if (nextBtn) nextBtn.addEventListener('click', () => showSlide(currentSlideIndex + 1));
-
-          modalBody.querySelectorAll('.dot').forEach(dot => {
-            dot.addEventListener('click', () => {
-              const idx = parseInt(dot.getAttribute('data-index'));
-              showSlide(idx);
-            });
-          });
-        }
-
-        // Bind details buttons
-        modalBody.querySelector('.btn-modal-add').addEventListener('click', () => {
-          addToCart(id, name, price, images[0]);
-          modal.classList.remove('show');
-          document.body.classList.remove('modal-open');
-        });
-
-        modalBody.querySelector('.btn-modal-instant').addEventListener('click', () => {
-          addToCart(id, name, price, images[0]);
-          modal.classList.remove('show');
-          
-          // Open drawer & trigger checkout
-          const cartDrawer = document.getElementById('cart-drawer');
-          if (cartDrawer) {
-            cartDrawer.classList.add('show');
-            renderCheckoutForm();
-          }
-        });
-
-        modal.classList.add('show');
-        document.body.classList.add('modal-open');
-      }
-
-      // ==========================================
       // WINDOW LOAD & INITIAL BINDINGS
       // ==========================================
       window.addEventListener('DOMContentLoaded', () => {
@@ -2329,33 +2236,10 @@ Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
           });
         }
 
-        // 3. Modal Backdrop and Close Click
-        const modal = document.getElementById('product-detail-modal');
-        const modalCloseBtn = document.querySelector('#product-detail-modal .modal-close');
-        const modalBackdrop = document.querySelector('#product-detail-modal .modal-backdrop');
-        if (modal) {
-          [modalCloseBtn, modalBackdrop].forEach(el => {
-            if (el) el.addEventListener('click', () => {
-              modal.classList.remove('show');
-              document.body.classList.remove('modal-open');
-            });
-          });
-        }
-
-        // 4. Product Card Click (For Detail Modal)
-        document.querySelectorAll('.product-card').forEach(card => {
-          card.addEventListener('click', (e) => {
-            // Do not open modal if user clicks add-to-cart button
-            if (e.target.closest('.btn-add-to-cart')) {
-              return;
-            }
-            openProductDetail(card);
-          });
-        });
-
-        // 5. Add to Cart Instant Button on Grid Card
+        // 3. Add to Cart Instant Button on Grid Card
         document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
           btn.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent navigating to detail page!
             e.stopPropagation(); // Prevent card trigger
             const id = btn.getAttribute('data-id');
             const name = btn.getAttribute('data-name');
