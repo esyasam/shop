@@ -33,9 +33,8 @@ except ImportError:
     print("Eğer şimdi yüklemek istemiyorsanız, sadece boyutlandırma ve yansıma işlemleri yapılacaktır.")
 
 # --- YAPILANDIRMA VE KALİBRASYON AYARLARI ---
-TABLE_LINE_Y = 960  # Ürünün masa üzerine basacağı dikey hizalama çizgisi (Y koordinatı) (%13.3 yukarı taşındı, eski değer: 1120)
-PRODUCT_MAX_HEIGHT = 600  # Ürünün şablondaki maksimum dikey yüksekliği (px)
-PRODUCT_MAX_WIDTH = 725   # Ürünün şablondaki maksimum yatay genişliği (px)
+PRODUCT_MAX_HEIGHT = 660  # Ürünün şablondaki maksimum dikey yüksekliği (px) (%10 büyütüldü, eski değer: 600)
+PRODUCT_MAX_WIDTH = 800   # Ürünün şablondaki maksimum yatay genişliği (px) (%10 büyütüldü, eski değer: 725)
 REFLECTION_OPACITY = 0.28  # Cam zemindeki yansımanın başlangıç şeffaflığı (0.0 - 1.0)
 REFLECTION_BLUR = 5        # Yansımanın fluluk derecesi (Blur yarıçapı, yumuşak flu yansıma için)
 SHADOW_OPACITY = 0.05      # Ürün altındaki gölgenin şeffaflığı (0.0 - 1.0) (Çok çok az gölge istendiği için eski 0.35 değeri düşürüldü)
@@ -173,9 +172,12 @@ def process_single_image(img_path, output_path, template_img):
         # Sahnemizi Kopyala (Şablon üzerinde çalışacağız)
         scene = template_img.copy()
         
-        # Ürün koordinatlarını hesapla (Tabanı TABLE_LINE_Y çizgisine basacak ve yatayda ortalanacak)
+        # Ürün koordinatlarını hesapla (Dikey ve yatayda tam ortalanacak şekilde)
         product_x = (1200 - new_w) // 2
-        product_y = TABLE_LINE_Y - new_h
+        product_y = (1200 - new_h) // 2
+        
+        # Dinamik dikey hizalama çizgisi (yansıma ve gölgenin yaslanacağı taban çizgisi)
+        dynamic_table_line_y = product_y + new_h
         
         # 5. GERÇEKÇİ CAM YANSIMASI (Reflection) EKLE
         print("   ↳ Cam yansıması hesaplanıyor...")
@@ -193,15 +195,15 @@ def process_single_image(img_path, output_path, template_img):
         else:
             combined_mask = mask
             
-        # Yansımayı sahneye TABLE_LINE_Y çizgisinden aşağıya doğru monte et
-        scene.paste(flipped_product, (product_x, TABLE_LINE_Y), combined_mask)
+        # Yansımayı sahneye dinamik taban çizgisinden aşağıya doğru monte et
+        scene.paste(flipped_product, (product_x, dynamic_table_line_y), combined_mask)
         
         # 6. YUMUŞAK TEMAS GÖLGESİ (Contact Shadow) EKLE
         print("   ↳ Yumuşak temas gölgesi çiziliyor...")
         shadow_blur = SHADOW_BLUR
         shadow_img = create_contact_shadow(new_w, shadow_blur, SHADOW_OPACITY)
         shadow_x = product_x - int(shadow_blur * 1.5)
-        shadow_y = TABLE_LINE_Y - int(shadow_img.height / 2)
+        shadow_y = dynamic_table_line_y - int(shadow_img.height / 2)
         scene.paste(shadow_img, (shadow_x, shadow_y), shadow_img)
         
         # 7. ASIL ÜRÜNÜ MONTE ET

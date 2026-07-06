@@ -62,7 +62,17 @@ function resolveProductImage(image, id) {
     }
   }
 
-  // 3. Klasik/eski eşleme mantığı (fallback)
+  // 3. Resmi bulunmayan ürünler için stok_logo.webp kontrolü ve fallback kullanımı
+  try {
+    const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'stok_logo.webp');
+    if (fs.existsSync(defaultLogoPath)) {
+      return '/images/stok_logo.webp';
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // 4. Klasik/eski eşleme mantığı (fallback)
   if (!image) {
     return `/images/products/${id}/cover.webp`;
   }
@@ -81,6 +91,16 @@ function getProductImagesList(imageField, productId) {
     const idPath = path.join(process.cwd(), 'public', 'images', `${productId}.webp`);
     if (fs.existsSync(idPath)) {
       return [`/images/${productId}.webp`];
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // 1.5 Resmi bulunmayan ürünler için stok_logo.webp kontrolü ve fallback kullanımı
+  try {
+    const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'stok_logo.webp');
+    if (fs.existsSync(defaultLogoPath)) {
+      return ['/images/stok_logo.webp'];
     }
   } catch (e) {
     // ignore
