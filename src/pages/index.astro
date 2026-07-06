@@ -1,5 +1,7 @@
 ---
 // ES Yaşam - Premium Tek Sayfalık E-Ticaret Vitrini (Instagram Satış Sayfası Tasarımı)
+import fs from 'node:fs';
+import path from 'node:path';
 
 const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
 const url = `${databaseUrl}/products.json`;
@@ -47,6 +49,29 @@ function getYoutubeEmbedUrl(url) {
  * E-tablodaki resim isimlerini veya boş yolları akıllı klasör yapımızla eşleyen yardımcı fonksiyon.
  */
 function resolveProductImage(image, id) {
+  // 1. Ürün ID'si ile eşleşen bir görselin direkt public/images altında olup olmadığını kontrol et (ör. 50200.webp, 50505.webp)
+  try {
+    const idPath = path.join(process.cwd(), 'public', 'images', `${id}.webp`);
+    if (fs.existsSync(idPath)) {
+      return `/images/${id}.webp`;
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // 2. Belirtilen görsel adının direkt public/images altında olup olmadığını kontrol et
+  if (image && !image.includes("/")) {
+    try {
+      const directPath = path.join(process.cwd(), 'public', 'images', image);
+      if (fs.existsSync(directPath)) {
+        return `/images/${image}`;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // 3. Klasik/eski eşleme mantığı (fallback)
   if (!image) {
     return `/images/products/${id}/cover.webp`;
   }
