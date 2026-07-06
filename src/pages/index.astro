@@ -499,6 +499,7 @@ function getInstagramDmUrl(productName, customLink) {
         border: none;
         cursor: pointer;
         z-index: 1;
+        animation: buttonPulse 3s infinite ease-in-out;
       }
 
       .btn-order::before {
@@ -811,6 +812,18 @@ function getInstagramDmUrl(productName, customLink) {
         to { opacity: 1; transform: translateY(0); }
       }
 
+      @keyframes buttonPulse {
+        0% {
+          box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+        }
+        50% {
+          box-shadow: 0 10px 30px rgba(212, 175, 55, 0.45), 0 0 0 4px rgba(212, 175, 55, 0.15);
+        }
+        100% {
+          box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+        }
+      }
+
       .btn-back {
         background: none;
         border: 1px solid rgba(212, 175, 55, 0.25);
@@ -840,61 +853,79 @@ function getInstagramDmUrl(productName, customLink) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: linear-gradient(135deg, rgba(85, 107, 47, 0.04) 0%, rgba(59, 78, 24, 0.07) 100%);
-        border: 2px solid var(--brand-gold);
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(212, 175, 55, 0.3);
         border-radius: 14px;
         padding: 0.5rem 0.8rem;
         height: 52px;
         box-sizing: border-box;
-        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.06);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         width: 100%;
         animation: fadeIn 0.3s ease;
       }
 
       .product-quantity-selector:hover {
-        box-shadow: 0 12px 28px rgba(212, 175, 55, 0.2);
+        box-shadow: 0 12px 28px rgba(212, 175, 55, 0.16);
         border-color: var(--brand-gold-dark, #c5a028);
       }
 
       .btn-qty-action {
-        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
-        color: white;
-        border: none;
-        width: 32px;
-        height: 32px;
+        background: rgba(212, 175, 55, 0.08);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        color: var(--brand-gold-dark);
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        font-size: 1.1rem;
-        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 3px 8px rgba(212, 175, 55, 0.05);
         padding: 0;
       }
 
       .btn-qty-action:hover {
-        transform: scale(1.12);
-        box-shadow: 0 6px 14px rgba(212, 175, 55, 0.35);
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        border-color: transparent;
+        color: white;
+        transform: scale(1.15);
+        box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
       }
 
       .btn-qty-action:active {
         transform: scale(0.9);
       }
 
+      .btn-qty-action svg {
+        stroke: currentColor;
+        display: block;
+      }
+
       .qty-display {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 3px;
         font-family: 'Outfit', sans-serif;
-        font-size: 1.05rem;
-        font-weight: 800;
         color: var(--brand-olive-dark, #3b4e18);
-        min-width: 35px;
-        text-align: center;
         user-select: none;
-        display: inline-block;
+      }
+
+      .qty-num {
+        font-size: 1.2rem;
+        font-weight: 800;
+      }
+
+      .qty-unit {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--brand-gold-dark, #c5a028);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     </style>
   </head>
@@ -1056,9 +1087,21 @@ function getInstagramDmUrl(productName, customLink) {
       function getGridQtySelectorHtml(id, name, price, image, qty) {
         return `
           <div class="product-quantity-selector" data-id="${id}" data-name="${name}" data-price="${price}" data-image="${image}">
-            <button class="btn-qty-action btn-qty-minus" data-id="${id}">−</button>
-            <span class="qty-display">${qty}</span>
-            <button class="btn-qty-action btn-qty-plus" data-id="${id}">＋</button>
+            <button class="btn-qty-action btn-qty-minus" data-id="${id}" aria-label="Azalt">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="qty-display">
+              <span class="qty-num">${qty}</span>
+              <span class="qty-unit">Adet</span>
+            </div>
+            <button class="btn-qty-action btn-qty-plus" data-id="${id}" aria-label="Artır">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
           </div>
         `;
       }

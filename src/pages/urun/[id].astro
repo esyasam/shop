@@ -806,6 +806,7 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
         color: white;
         box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+        animation: buttonPulse 3s infinite ease-in-out;
       }
 
       /* Premium Light-Sweep Shimmer Effect */
@@ -1262,66 +1263,96 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: linear-gradient(135deg, rgba(85, 107, 47, 0.04) 0%, rgba(59, 78, 24, 0.07) 100%);
-        border: 2px solid var(--brand-gold);
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(212, 175, 55, 0.3);
         border-radius: 16px;
-        padding: 0.5rem 0.8rem;
+        padding: 0.5rem 1rem;
         height: 58px;
         box-sizing: border-box;
-        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.08);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         width: 100%;
         animation: fadeIn 0.3s ease;
       }
 
       .detail-quantity-selector:hover {
-        box-shadow: 0 12px 28px rgba(212, 175, 55, 0.2);
+        box-shadow: 0 15px 35px rgba(212, 175, 55, 0.18);
         border-color: var(--brand-gold-dark, #c5a028);
       }
 
-      .btn-qty-action {
-        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
-        color: white;
-        border: none;
-        width: 38px;
-        height: 38px;
+      .detail-quantity-selector .btn-qty-action {
+        background: rgba(212, 175, 55, 0.08);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        color: var(--brand-gold-dark);
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
-        font-size: 1.2rem;
-        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.05);
         padding: 0;
       }
 
-      .btn-qty-action:hover {
+      .detail-quantity-selector .btn-qty-action:hover {
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        border-color: transparent;
+        color: white;
         transform: scale(1.12);
-        box-shadow: 0 6px 14px rgba(212, 175, 55, 0.35);
+        box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
       }
 
-      .btn-qty-action:active {
+      .detail-quantity-selector .btn-qty-action:active {
         transform: scale(0.9);
       }
 
-      .qty-display {
+      .detail-quantity-selector .btn-qty-action svg {
+        stroke: currentColor;
+        display: block;
+      }
+
+      .detail-quantity-selector .qty-display {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 3px;
         font-family: 'Outfit', sans-serif;
-        font-size: 1.15rem;
-        font-weight: 800;
         color: var(--brand-olive-dark, #3b4e18);
-        min-width: 45px;
-        text-align: center;
         user-select: none;
-        display: inline-block;
+      }
+
+      .detail-quantity-selector .qty-num {
+        font-size: 1.35rem;
+        font-weight: 800;
+      }
+
+      .detail-quantity-selector .qty-unit {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--brand-gold-dark, #c5a028);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
+      }
+
+      @keyframes buttonPulse {
+        0% {
+          box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+        }
+        50% {
+          box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4), 0 0 0 4px rgba(212, 175, 55, 0.15);
+        }
+        100% {
+          box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+        }
       }
     </style>
   </head>
@@ -1634,9 +1665,21 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
       function getDetailQtySelectorHtml(id, name, price, image, qty) {
         return `
           <div class="detail-quantity-selector" data-id="${id}" data-name="${name}" data-price="${price}" data-image="${image}">
-            <button class="btn-qty-action btn-qty-minus" data-id="${id}">−</button>
-            <span class="qty-display">${qty} Adet</span>
-            <button class="btn-qty-action btn-qty-plus" data-id="${id}">＋</button>
+            <button class="btn-qty-action btn-qty-minus" data-id="${id}" aria-label="Azalt">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="qty-display">
+              <span class="qty-num">${qty}</span>
+              <span class="qty-unit">Adet</span>
+            </div>
+            <button class="btn-qty-action btn-qty-plus" data-id="${id}" aria-label="Artır">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
           </div>
         `;
       }
