@@ -751,49 +751,12 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         }
       }
 
-      .btn-detail-add-cart {
-        padding: 1.1rem 1.8rem;
-        border-radius: 16px;
-        font-size: 1.05rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.8rem;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border: 1px solid rgba(212, 175, 55, 0.35);
-        background: white;
-        color: var(--brand-gold-dark);
-        box-shadow: 0 4px 15px rgba(44, 37, 32, 0.02);
-      }
-
-      .btn-detail-add-cart:hover {
-        background: var(--brand-gold);
-        border-color: var(--brand-gold);
-        color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.15);
-      }
-
-      .btn-detail-add-cart:active {
-        transform: translateY(-1px);
-      }
-
-      .btn-detail-add-cart svg {
-        transition: transform 0.3s ease;
-      }
-
-      .btn-detail-add-cart:hover svg {
-        transform: scale(1.1);
-      }
-
-      .btn-detail-instant-checkout {
+      .btn-detail-add-cart, .btn-detail-instant-checkout {
         position: relative;
         overflow: hidden;
         z-index: 1;
-        padding: 1.1rem 1.8rem;
-        border-radius: 16px;
+        padding: 1.1rem 2rem;
+        border-radius: 14px;
         font-size: 1.05rem;
         font-weight: 700;
         cursor: pointer;
@@ -806,11 +769,10 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
         color: white;
         box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
-        animation: buttonPulse 3s infinite ease-in-out;
       }
 
       /* Premium Light-Sweep Shimmer Effect */
-      .btn-detail-instant-checkout::before {
+      .btn-detail-add-cart::before, .btn-detail-instant-checkout::before {
         content: '';
         position: absolute;
         top: 0;
@@ -828,26 +790,26 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         z-index: -1;
       }
 
-      .btn-detail-instant-checkout:hover::before {
+      .btn-detail-add-cart:hover::before, .btn-detail-instant-checkout:hover::before {
         left: 150%;
         transition: 0.75s;
       }
 
-      .btn-detail-instant-checkout:hover {
+      .btn-detail-add-cart:hover, .btn-detail-instant-checkout:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 30px rgba(212, 175, 55, 0.35);
       }
 
-      .btn-detail-instant-checkout:active {
+      .btn-detail-add-cart:active, .btn-detail-instant-checkout:active {
         transform: translateY(-1px);
       }
 
-      /* SVG Arrow Translate on Hover */
-      .btn-detail-instant-checkout svg {
+      /* SVG Arrow & Icon Translate on Hover */
+      .btn-detail-add-cart svg, .btn-detail-instant-checkout svg {
         transition: transform 0.3s ease;
       }
 
-      .btn-detail-instant-checkout:hover svg {
+      .btn-detail-add-cart:hover svg, .btn-detail-instant-checkout:hover svg {
         transform: translateX(4px);
       }
 
