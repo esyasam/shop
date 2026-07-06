@@ -22,38 +22,6 @@ try {
   dbError = true;
 }
 
-// Eğer veritabanı boşsa veya hata alındıysa, marka standartlarımıza uygun premium yedek (fallback) verileri gösteriyoruz
-if (products.length === 0) {
-  products = [
-    {
-      id: "leke-cikartici",
-      name: "Leke Çıkartıcı",
-      salePrice: 150,
-      features: "Viral temizlik ürünü\nHer türlü zorlu lekeyi saniyeler içinde çıkarır\nKumaş ve yüzey dokusuna zarar vermez\nPratik ve hızlı kullanım",
-      image: "/images/products/leke-cikartici/cover.webp",
-      video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      links: "https://instagram.com/es_yasam"
-    },
-    {
-      id: "sari-guc",
-      name: "Sarı Güç",
-      salePrice: 120,
-      features: "Çok amaçlı ultra temizleyici\nYağ, kir ve kireç üzerinde tam etki\nMutfak, banyo ve tüm yüzeylerde güvenli\nFerahlatıcı organik limon kokusu",
-      image: "/images/products/sari-guc/cover.webp",
-      video: "",
-      links: "https://instagram.com/es_yasam"
-    },
-    {
-      id: "mavi-guc",
-      name: "Mavi Güç",
-      salePrice: 130,
-      features: "Ultra yoğun temizlik gücü\nZorlu kirler ve derinlemesine hijyen\nYüzeyleri parlatır ve özel koruma sağlar\nUzun süreli kalıcı lüks ferahlık",
-      image: "/images/products/mavi-guc/cover.webp",
-      video: "",
-      links: "https://instagram.com/es_yasam"
-    }
-  ];
-}
 
 /**
  * YouTube linklerini (Shorts dahil) otomatik olarak embed koduna çeviren akıllı yardımcı fonksiyon.
@@ -500,6 +468,68 @@ function resolveProductImage(image, id) {
         transform: translateX(4px);
       }
 
+
+      /* Boş Durum (Empty State) Tasarımı */
+      .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.15);
+        border-radius: 24px;
+        max-width: 600px;
+        margin: 2rem auto;
+        box-shadow: 0 15px 45px rgba(44, 37, 32, 0.02);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      .empty-state .icon {
+        font-size: 3.5rem;
+        animation: pulse 2s infinite ease-in-out;
+      }
+
+      .empty-state h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+
+      .empty-state p {
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        max-width: 450px;
+      }
+
+      .btn-follow {
+        display: inline-block;
+        padding: 0.9rem 2rem;
+        background: linear-gradient(135deg, var(--brand-olive) 0%, var(--brand-olive-light) 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 8px 20px rgba(85, 107, 47, 0.2);
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+      }
+
+      .btn-follow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(85, 107, 47, 0.35);
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+      }
+
       /* SIPARIŞ ADIMLARI (Instagram Satış Akışı) */
       .order-steps-section {
         margin: 6rem auto 5rem;
@@ -655,65 +685,74 @@ function resolveProductImage(image, id) {
         <h2 class="section-title">Lansman <span>Ürünlerimiz</span></h2>
         
         <div class="products-grid">
-          {products.map(product => {
-            const resolvedImg = resolveProductImage(product.image, product.id);
-            const embedVideo = getYoutubeEmbedUrl(product.video);
-            
-            // Satış fiyatına göre hayali bir eski fiyat hesaplayarak indirim hissiyatı veriyoruz (Insta satış sayfası tarzı)
-            const oldPrice = Math.round(product.salePrice * 1.4);
-            
-            return (
-              <div class="product-card" id={`product-${product.id}`}>
-                {/* Rozet */}
-                <div class="badge">VİRAL ÜRÜN</div>
-                
-                {/* Ürün Görseli */}
-                <div class="product-img-wrapper">
-                  <img src={resolvedImg} alt={product.name} class="product-img" loading="lazy" />
-                </div>
-                
-                <div class="product-info">
-                  {/* Başlık ve Fiyat */}
-                  <h3 class="product-name">{product.name}</h3>
+          {products.length === 0 ? (
+            <div class="empty-state">
+              <span class="icon">🌿</span>
+              <h3>Yepyeni Ürünlerimiz Pek Yakında!</h3>
+              <p>Doğal temizlik ve ferahlık sunan lansman ürünlerimiz hazırlanıyor. Güncel ürünlerimizi ve viral videolarımızı çok yakında burada görebilirsiniz.</p>
+              <a href="https://instagram.com/es_yasam" target="_blank" class="btn-follow">Instagram'da Takip Edin</a>
+            </div>
+          ) : (
+            products.map(product => {
+              const resolvedImg = resolveProductImage(product.image, product.id);
+              const embedVideo = getYoutubeEmbedUrl(product.video);
+              
+              // Satış fiyatına göre hayali bir eski fiyat hesaplayarak indirim hissiyatı veriyoruz (Insta satış sayfası tarzı)
+              const oldPrice = Math.round(product.salePrice * 1.4);
+              
+              return (
+                <div class="product-card" id={`product-${product.id}`}>
+                  {/* Rozet */}
+                  <div class="badge">VİRAL ÜRÜN</div>
                   
-                  <div class="price-box">
-                    <span class="price-old">{oldPrice} TL</span>
-                    <span class="price-sale">{product.salePrice} TL</span>
+                  {/* Ürün Görseli */}
+                  <div class="product-img-wrapper">
+                    <img src={resolvedImg} alt={product.name} class="product-img" loading="lazy" />
                   </div>
                   
-                  {/* Detaylar / Özellikler */}
-                  <ul class="features-list">
-                    {product.features.split('\n').filter(Boolean).map(feature => (
-                      <li>
-                        <span class="bullet">✦</span>
-                        <span>{feature.replace(/^[✓\s*-]+/, '')}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  {/* YouTube Tanıtım Videosu (Varsa) */}
-                  {embedVideo && (
-                    <div class="video-box">
-                      <iframe 
-                        src={embedVideo} 
-                        title={`${product.name} Tanıtım Videosu`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                      ></iframe>
+                  <div class="product-info">
+                    {/* Başlık ve Fiyat */}
+                    <h3 class="product-name">{product.name}</h3>
+                    
+                    <div class="price-box">
+                      <span class="price-old">{oldPrice} TL</span>
+                      <span class="price-sale">{product.salePrice} TL</span>
                     </div>
-                  )}
-                  
-                  {/* Satın Alma / Sipariş CTA */}
-                  <a href={product.links || "https://instagram.com/es_yasam"} target="_blank" class="btn-order">
-                    <span>Instagram'da Sipariş Ver</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </a>
+                    
+                    {/* Detaylar / Özellikler */}
+                    <ul class="features-list">
+                      {product.features.split('\n').filter(Boolean).map(feature => (
+                        <li>
+                          <span class="bullet">✦</span>
+                          <span>{feature.replace(/^[✓\s*-]+/, '')}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    {/* YouTube Tanıtım Videosu (Varsa) */}
+                    {embedVideo && (
+                      <div class="video-box">
+                        <iframe 
+                          src={embedVideo} 
+                          title={`${product.name} Tanıtım Videosu`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                          allowfullscreen
+                        ></iframe>
+                      </div>
+                    )}
+                    
+                    {/* Satın Alma / Sipariş CTA */}
+                    <a href={product.links || "https://instagram.com/es_yasam"} target="_blank" class="btn-order">
+                      <span>Instagram'da Sipariş Ver</span>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </a>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </section>
 
@@ -783,8 +822,8 @@ function resolveProductImage(image, id) {
         Instagram'da Bizi Takip Edin: @es_yasam
       </a>
       <div class="copyright">
-        © 2026 ES Yaşam & Uçbeyi Gıda. Tüm hakları saklıdır. <br />
-        <span style="font-size: 0.8rem; opacity: 0.7;">Powered by Firebase Realtime DB & Astro Static Architecture</span>
+        © 2026 ES Yaşam. Tüm hakları saklıdır. <br />
+        <span style="font-size: 0.8rem; opacity: 0.7;">Powered by CTY</span>
       </div>
     </footer>
   </body>
