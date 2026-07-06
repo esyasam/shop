@@ -350,6 +350,21 @@ function getInstagramDmUrl(productName, customLink) {
         border-color: rgba(212, 175, 55, 0.35);
       }
 
+      .product-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        width: 100%;
+        margin-bottom: 1.2rem;
+      }
+
+      .product-action-wrapper {
+        width: 100%;
+        margin-top: auto;
+      }
+
       /* Viral / Yeni Ürün Rozeti */
       .badge {
         position: absolute;
@@ -486,6 +501,8 @@ function getInstagramDmUrl(productName, customLink) {
         align-items: center;
         justify-content: center;
         gap: 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
         padding: 1.1rem 2rem;
         background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
         color: white;
@@ -977,49 +994,49 @@ function getInstagramDmUrl(productName, customLink) {
                 <div 
                   class="product-card" 
                   id={`product-${product.id}`}
-                  onClick={() => window.openProductModal(product)}
                 >
-                  <div class="badge">VİRAL ÜRÜN</div>
-                  
-                  <div class="product-img-wrapper">
-                    <img 
-                      src={resolvedImg} 
-                      alt={product.name} 
-                      class="product-img" 
-                      loading={index === 0 ? "eager" : "lazy"} 
-                      fetchpriority={index === 0 ? "high" : "auto"}
-                    />
-                  </div>
-                  
-                  <div class="product-info">
-                    <h3 class="product-name">{product.name}</h3>
+                  <a href={`/urun/${product.id}`} class="product-card-link">
+                    <div class="badge">VİRAL ÜRÜN</div>
                     
-                    <div class="price-box">
-                      {originalPrice && <span class="price-old">{originalPrice} TL</span>}
-                      <span class="price-sale">{currentPrice} TL</span>
+                    <div class="product-img-wrapper">
+                      <img 
+                        src={resolvedImg} 
+                        alt={product.name} 
+                        class="product-img" 
+                        loading={index === 0 ? "eager" : "lazy"} 
+                        fetchpriority={index === 0 ? "high" : "auto"}
+                      />
                     </div>
                     
-                    <div class="product-action-wrapper" 
+                    <div class="product-info">
+                      <h3 class="product-name">{product.name}</h3>
+                      
+                      <div class="price-box">
+                        {originalPrice && <span class="price-old">{originalPrice} TL</span>}
+                        <span class="price-sale">{currentPrice} TL</span>
+                      </div>
+                    </div>
+                  </a>
+                  
+                  <div class="product-action-wrapper" 
+                    data-id={product.id} 
+                    data-name={product.name} 
+                    data-price={currentPrice} 
+                    data-image={resolvedImg}
+                  >
+                    <button class="btn-order btn-add-to-cart" 
                       data-id={product.id} 
                       data-name={product.name} 
                       data-price={currentPrice} 
                       data-image={resolvedImg}
                     >
-                      <button class="btn-order btn-add-to-cart" 
-                        data-id={product.id} 
-                        data-name={product.name} 
-                        data-price={currentPrice} 
-                        data-image={resolvedImg}
-                        onClick={(e) => { e.stopPropagation(); window.addToCart(product.id, product.name, currentPrice, resolvedImg); }}
-                      >
-                        <span>Sepete Ekle</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <circle cx="9" cy="21" r="1"></circle>
-                          <circle cx="20" cy="21" r="1"></circle>
-                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
-                      </button>
-                    </div>
+                      <span>Sepete Ekle</span>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               );
