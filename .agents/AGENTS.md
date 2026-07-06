@@ -50,3 +50,10 @@ Bu dosya, Antigravity AI kodlama asistanının ES Yaşam projesinde her zaman ha
     *   Sitede sepet veya telefon numarası tabanlı form/sipariş olmayacaktır. 
     *   Kullanıcılar doğrudan ürünü satın almak, bilgi almak veya sipariş oluşturmak için resmi Instagram hesabına (**`@es_yasam`**) veya doğrudan Instagram DM sayfasına yönlendirilecektir (`https://instagram.com/es_yasam`). Butonlar bu Instagram bağlantısına premium bir şekilde entegre edilecektir.
 *   **Performans ve SEO:** Astro'nun statik HTML çıktıları korunacak, LCP (Largest Contentful Paint) optimizasyonu için resimler WebP formatında optimize edilecektir.
+
+---
+
+## 🚀 Dağıtım ve Otomasyon Kuralları (Deployment & Automation)
+
+*   **Otomatik Push Onayı:** Yerel ortamda başarıyla derlenen (`npm run build` hatasız tamamlanan) tüm web sitesi değişiklikleri, kullanıcıdan ekstra bir onay beklenmeksizin doğrudan GitHub `main` dalına push edilmelidir. Bu sayede canlı ortamdaki (Cloudflare Pages) güncellemeler kullanıcı tarafından online olarak hızlıca kontrol edilebilir.
+
