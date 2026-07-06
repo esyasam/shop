@@ -55,6 +55,17 @@ function resolveProductImage(image, id) {
   }
   return image;
 }
+
+/**
+ * Ürüne özel, sürtünmesiz direkt Instagram DM mesaj linki oluşturan yardımcı fonksiyon.
+ */
+function getInstagramDmUrl(productName, customLink) {
+  if (customLink && customLink.trim() !== "") {
+    return customLink;
+  }
+  const baseText = `Merhaba, ES Yaşam ${productName} ürününüz hakkında bilgi almak ve sipariş vermek istiyorum!`;
+  return `https://ig.me/m/es_yasam?text=${encodeURIComponent(baseText)}`;
+}
 ---
 
 <html lang="tr">
@@ -68,6 +79,14 @@ function resolveProductImage(image, id) {
     <title>ES Yaşam - Daha güzel bir yaşam için | Premium Mağaza</title>
     <meta name="description" content="Leke Çıkartıcı, Sarı Güç ve Mavi Güç lansman ürünlerimiz için hazırlanan ultra-premium, yüksek dönüşümlü e-ticaret satış sayfamız. Tüm ürünlerimizi inceleyin ve Instagram @es_yasam üzerinden kolayca sipariş verin." />
     <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph (Sosyal Medya Paylaşım ve Önizleme Kartları) -->
+    <meta property="og:title" content="ES Yaşam - Daha güzel bir yaşam için" />
+    <meta property="og:description" content="Doğadan ilham alan lüks formüllü temizlik ürünlerimizle tanışın. Stoklarımız her zaman güncel tutulmaktadır. Instagram DM üzerinden kolayca sipariş verin!" />
+    <meta property="og:image" content="https://esyasam.com/images/logo.jpg" />
+    <meta property="og:url" content="https://esyasam.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ES Yaşam" />
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -595,7 +614,7 @@ function resolveProductImage(image, id) {
 
       .values-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 2.5rem;
         margin-top: 2.5rem;
       }
@@ -611,6 +630,81 @@ function resolveProductImage(image, id) {
         font-size: 0.95rem;
         color: var(--text-muted);
         line-height: 1.6;
+      }
+
+      /* SSS (FAQ) Accordion Tasarımı */
+      .faq-section {
+        max-width: 850px;
+        margin: 6rem auto 5rem;
+        padding: 0 1.5rem;
+        text-align: center;
+      }
+      
+      .faq-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        margin-top: 2.5rem;
+        text-align: left;
+      }
+      
+      .faq-item {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.18);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .faq-item:hover {
+        border-color: rgba(212, 175, 55, 0.4);
+        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.08);
+      }
+      
+      .faq-item details {
+        padding: 1.2rem 1.5rem;
+      }
+      
+      .faq-item summary {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        outline: none;
+        user-select: none;
+      }
+      
+      .faq-item summary::-webkit-details-marker {
+        display: none;
+      }
+      
+      .faq-item summary::after {
+        content: '＋';
+        font-size: 1.2rem;
+        color: var(--brand-gold-dark);
+        transition: transform 0.3s ease;
+        font-weight: bold;
+      }
+      
+      .faq-item details[open] summary::after {
+        content: '－';
+        transform: rotate(180deg);
+      }
+      
+      .faq-content {
+        margin-top: 1rem;
+        color: var(--text-muted);
+        font-size: 0.98rem;
+        line-height: 1.6;
+        padding-top: 0.8rem;
+        border-top: 1px dashed rgba(212, 175, 55, 0.15);
+        animation: slideDown 0.3s ease-out;
       }
 
       /* Altbilgi (Footer) */
@@ -657,6 +751,11 @@ function resolveProductImage(image, id) {
         from { opacity: 0; transform: translateY(30px); }
         to { opacity: 1; transform: translateY(0); }
       }
+
+      @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
     </style>
   </head>
   <body>
@@ -676,7 +775,7 @@ function resolveProductImage(image, id) {
       <!-- Hoş Geldiniz Açıklaması -->
       <section class="intro-card">
         <p>
-          Doğadan ilham alan, lüks formüllere sahip temizlik ürünlerimizle tanışın. E-tablomuzdan anlık olarak güncellenen stoklarımız ile lansman ürünlerimiz olan Leke Çıkartıcı, Sarı Güç ve Mavi Güç burada listelenmektedir. Ürün özelliklerini inceleyin ve Instagram DM üzerinden bizimle iletişime geçerek kolayca sipariş verin!
+          Doğadan ilham alan, lüks formüllere sahip temizlik ürünlerimizle tanışın. Stoklarımız her zaman güncel tutulmaktadır. En iyi ve ekonomik ürünleri size en uygun şekilde sunma gayretindeyiz. Ürünlerimizin özelliklerini ve kullanım videolarını aşağıda inceleyebilir, sipariş için doğrudan Instagram DM üzerinden bizimle iletişime geçebilirsiniz!
         </p>
       </section>
 
@@ -693,12 +792,19 @@ function resolveProductImage(image, id) {
               <a href="https://instagram.com/es_yasam" target="_blank" class="btn-follow">Instagram'da Takip Edin</a>
             </div>
           ) : (
-            products.map(product => {
+            products.map((product, index) => {
               const resolvedImg = resolveProductImage(product.image, product.id);
               const embedVideo = getYoutubeEmbedUrl(product.video);
               
-              // Satış fiyatına göre hayali bir eski fiyat hesaplayarak indirim hissiyatı veriyoruz (Insta satış sayfası tarzı)
-              const oldPrice = Math.round(product.salePrice * 1.4);
+              // Eski (üzeri çizili) fiyat ve indirimli (yeni) satış fiyatı ayarı:
+              // Eğer veritabanından 'campaignPrice' (Yeni_Fiyati) geliyorsa ve 0'dan büyükse onu indirimli fiyat yapıyoruz,
+              // 'salePrice' (Satis_Fiyati) ise üzeri çizili eski fiyat oluyor.
+              const campaignPriceNum = parseFloat(product.campaignPrice);
+              const salePriceNum = parseFloat(product.salePrice) || 0;
+              const hasCampaign = !isNaN(campaignPriceNum) && campaignPriceNum > 0 && campaignPriceNum < salePriceNum;
+              
+              const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
+              const originalPrice = hasCampaign ? salePriceNum : null;
               
               return (
                 <div class="product-card" id={`product-${product.id}`}>
@@ -707,7 +813,13 @@ function resolveProductImage(image, id) {
                   
                   {/* Ürün Görseli */}
                   <div class="product-img-wrapper">
-                    <img src={resolvedImg} alt={product.name} class="product-img" loading="lazy" />
+                    <img 
+                      src={resolvedImg} 
+                      alt={product.name} 
+                      class="product-img" 
+                      loading={index === 0 ? "eager" : "lazy"} 
+                      fetchpriority={index === 0 ? "high" : "auto"}
+                    />
                   </div>
                   
                   <div class="product-info">
@@ -715,8 +827,8 @@ function resolveProductImage(image, id) {
                     <h3 class="product-name">{product.name}</h3>
                     
                     <div class="price-box">
-                      <span class="price-old">{oldPrice} TL</span>
-                      <span class="price-sale">{product.salePrice} TL</span>
+                      {originalPrice && <span class="price-old">{originalPrice} TL</span>}
+                      <span class="price-sale">{currentPrice} TL</span>
                     </div>
                     
                     {/* Detaylar / Özellikler */}
@@ -742,7 +854,7 @@ function resolveProductImage(image, id) {
                     )}
                     
                     {/* Satın Alma / Sipariş CTA */}
-                    <a href={product.links || "https://instagram.com/es_yasam"} target="_blank" class="btn-order">
+                    <a href={getInstagramDmUrl(product.name, product.links)} target="_blank" class="btn-order">
                       <span>Instagram'da Sipariş Ver</span>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"></polyline>
@@ -768,7 +880,7 @@ function resolveProductImage(image, id) {
           <div class="step-card">
             <div class="step-number">1</div>
             <h4>Ürünü Seçin</h4>
-            <p>E-tablodan anlık güncellenen sayfamızdan dilediğiniz ürünü, özelliklerini ve viral kullanım videolarını inceleyin.</p>
+            <p>Her zaman güncel tutulan sayfamızdan dilediğiniz ürünü, özelliklerini ve viral kullanım videolarını inceleyin.</p>
           </div>
           
           <!-- 2. Adım -->
@@ -803,8 +915,60 @@ function resolveProductImage(image, id) {
           </div>
           
           <div class="value-item">
+            <h4>📦 Sızdırmaz Özel Kargo</h4>
+            <p>Sıvı ürünlerimiz kargoda akma veya kırılma yaşanmaması için çift korumalı lüks sızdırmaz paketlerle ulaştırılır.</p>
+          </div>
+          
+          <div class="value-item">
             <h4>💬 Samimi İletişim</h4>
             <p>Robotlar veya otomatik telesekreterler yok; Instagram DM üzerinden her zaman doğrudan bizimle görüşün.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SSS (Sıkça Sorulan Sorular) Paneli -->
+      <section class="faq-section">
+        <h2 class="section-title">Sıkça Sorulan <span>Sorular</span></h2>
+        
+        <div class="faq-list">
+          <!-- Soru 1 -->
+          <div class="faq-item">
+            <details>
+              <summary>Nasıl sipariş verebilirim?</summary>
+              <div class="faq-content">
+                Beğendiğiniz ürünün altındaki <strong>"Instagram'da Sipariş Ver"</strong> butonuna tıklayarak doğrudan resmi hesabımız olan <strong>@es_yasam</strong> DM kutusuna bağlanabilirsiniz. Siparişlerinizi samimi ve güvenli bir sohbetle anında oluşturuyoruz.
+              </div>
+            </details>
+          </div>
+
+          <!-- Soru 2 -->
+          <div class="faq-item">
+            <details>
+              <summary>Kargo gönderimi nasıl yapılıyor ve ücreti ne kadar?</summary>
+              <div class="faq-content">
+                Siparişleriniz aynı gün veya en geç ertesi iş günü özenle hazırlanarak kargoya verilir. Sıvı temizlik ürünlerimiz kargoda akma veya kırılma yaşanmaması için çift korumalı lüks sızdırmaz paketlerle ulaştırılır. Güncel kargo kampanyaları ve ücret detayları için Instagram DM üzerinden güncel bilgi alabilirsiniz.
+              </div>
+            </details>
+          </div>
+
+          <!-- Soru 3 -->
+          <div class="faq-item">
+            <details>
+              <summary>Ödeme yöntemleriniz nelerdir? Kapıda ödeme var mı?</summary>
+              <div class="faq-content">
+                Evet, <strong>kapıda ödeme</strong> seçeneğimiz mevcuttur! Dilerseniz kapıda nakit/kredi kartı ödeme yöntemiyle, dilerseniz de güvenli havale/EFT seçenekleriyle kolayca siparişinizi tamamlayabilirsiniz.
+              </div>
+            </details>
+          </div>
+
+          <!-- Soru 4 -->
+          <div class="faq-item">
+            <details>
+              <summary>Ürünlerinizin içerikleri doğal mı?</summary>
+              <div class="faq-content">
+                Evet. Tüm ürünlerimiz doğanın şifalı özlerinden ilham alan, çevre dostu ve insan sağlığına zararsız bileşenlerle zenginleştirilmiş lüks formüllere sahiptir. Evinizde yoğun ve premium bir hijyen sunarken, doğallıktan ödün vermez.
+              </div>
+            </details>
           </div>
         </div>
       </section>
