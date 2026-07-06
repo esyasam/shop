@@ -30,6 +30,9 @@
 
     <div class="drawer-header">
       <h3>Alışveriş Sepetim</h3>
+      <button id="header-clear-cart" class="btn-clear-cart" title="Sepeti Temizle" style="display: none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 3 21 3 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+      </button>
       <button class="drawer-close" aria-label="Kapat">×</button>
     </div>
     <div class="drawer-body">
@@ -38,7 +41,7 @@
   </div>
 </div>
 
-<style>
+<style is:global>
   /* Toast Notification Container */
   #toast-container {
     position: fixed;
@@ -812,6 +815,67 @@
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.3); }
   }
+
+  /* Kargo Bedava Progress Bar */
+  .kargo-bedava-container {
+    background: rgba(85, 107, 47, 0.05);
+    border: 1px solid rgba(85, 107, 47, 0.1);
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
+  }
+  .kargo-text {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--brand-olive);
+    text-align: center;
+  }
+  .kargo-text b {
+    color: var(--brand-gold-dark);
+  }
+  .kargo-bar-bg {
+    background: rgba(212, 175, 55, 0.12);
+    height: 6px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .kargo-bar-fill {
+    background: linear-gradient(to right, var(--brand-gold) 0%, var(--brand-olive) 100%);
+    height: 100%;
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.4s ease-out;
+  }
+
+  /* Clear Cart Header Button */
+  .btn-clear-cart {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+    margin-right: 48px; /* Room for close button */
+    padding: 0;
+  }
+  .btn-clear-cart:hover {
+    background: rgba(231, 76, 60, 0.08);
+  }
+  .btn-clear-cart svg {
+    display: block;
+    stroke: currentColor;
+  }
 </style>
 
 <script is:inline>
@@ -951,7 +1015,10 @@
       stepper.style.display = cart.length === 0 ? 'none' : 'flex';
     }
 
+    const clearBtn = document.getElementById('header-clear-cart');
+
     if (cart.length === 0) {
+      if (clearBtn) clearBtn.style.display = 'none';
       drawerBody.innerHTML = `
         <div class="empty-cart-view">
           <div class="empty-cart-icon-container">
@@ -982,6 +1049,8 @@
       }
       return;
     }
+
+    if (clearBtn) clearBtn.style.display = 'flex';
 
     // Update stepper progress
     updateStepper(1);
@@ -1016,8 +1085,33 @@
     `).join('');
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const kargoLimit = 1500;
+    let kargoHtml = '';
+    
+    if (total >= kargoLimit) {
+      kargoHtml = `
+        <div class="kargo-bedava-container">
+          <div class="kargo-text">🚚 Tebrikler, <b>kargo ücretsiz!</b> Limit aşıldı.</div>
+          <div class="kargo-bar-bg">
+            <div class="kargo-bar-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+      `;
+    } else {
+      const remaining = kargoLimit - total;
+      const percent = (total / kargoLimit) * 100;
+      kargoHtml = `
+        <div class="kargo-bedava-container">
+          <div class="kargo-text">ℹ️ Sepetinize <b>${remaining.toFixed(2)} TL</b> değerinde ürün ekleyin, kargo bedava olsun!</div>
+          <div class="kargo-bar-bg">
+            <div class="kargo-bar-fill" style="width: ${percent}%;"></div>
+          </div>
+        </div>
+      `;
+    }
 
     drawerBody.innerHTML = `
+      ${kargoHtml}
       <div class="cart-items-list">
         ${cartItemsHtml}
       </div>
@@ -1052,6 +1146,31 @@
   }
 
   // ==========================================
+  // CUSTOMER INFO CACHING & UTILS
+  // ==========================================
+  function loadCustomerInfo() {
+    const saved = localStorage.getItem('esyasam_customer_info');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  function clearCart() {
+    if (confirm("Sepetinizi boşaltmak istediğinize emin misiniz?")) {
+      cart = [];
+      saveCart();
+      renderCart();
+      showToast("Sepetiniz boşaltıldı.", "info");
+    }
+  }
+  window.clearCart = clearCart;
+
+  // ==========================================
   // CHECKOUT STEP FORM
   // ==========================================
   function renderCheckoutForm() {
@@ -1061,7 +1180,22 @@
     drawerBody.scrollTop = 0;
     updateStepper(2);
 
+    const clearBtn = document.getElementById('header-clear-cart');
+    if (clearBtn) clearBtn.style.display = 'none';
+
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    const customerInfo = loadCustomerInfo();
+    const fullname = customerInfo ? customerInfo.fullname : '';
+    const phone = customerInfo ? customerInfo.phone : '';
+    const tc = customerInfo ? customerInfo.tc : '';
+    const city = customerInfo ? customerInfo.city : '';
+    const district = customerInfo ? customerInfo.district : '';
+    const address = customerInfo ? customerInfo.address : '';
+    const note = customerInfo ? customerInfo.note : '';
+    const sameAddress = customerInfo ? customerInfo.sameAddress !== false : true;
+    const deliveryAddress = customerInfo ? customerInfo.deliveryAddress : '';
+    const paymentMethod = customerInfo ? customerInfo.paymentMethod : 'Kredi Kartı';
 
     drawerBody.innerHTML = `
       <button class="btn-back">
@@ -1079,44 +1213,63 @@
       <form id="esyasam-order-form" class="checkout-form">
         <div class="form-group">
           <label for="order-fullname">Ad Soyad</label>
-          <input type="text" id="order-fullname" class="form-control" placeholder="Örn: Ahmet Yılmaz" required />
+          <input type="text" id="order-fullname" class="form-control" placeholder="Örn: Ahmet Yılmaz" value="${fullname}" required />
           <span class="error-msg">Lütfen adınızı ve soyadınızı girin.</span>
         </div>
 
         <div class="form-group">
           <label for="order-phone">Telefon Numarası</label>
-          <input type="tel" id="order-phone" class="form-control" placeholder="Örn: 0555 123 4567" required />
+          <input type="tel" id="order-phone" class="form-control" placeholder="Örn: 0555 123 4567" value="${phone}" required />
           <span class="error-msg">Geçerli bir telefon numarası girin.</span>
         </div>
 
         <div class="form-group">
           <label for="order-tc">T.C. Kimlik Numarası</label>
-          <input type="text" id="order-tc" class="form-control" maxlength="11" placeholder="Kargo ve fatura zorunluluğu" required />
+          <input type="text" id="order-tc" class="form-control" maxlength="11" placeholder="Kargo ve fatura zorunluluğu" value="${tc}" required />
           <span class="error-msg">Lütfen 11 haneli geçerli T.C. Kimlik numaranızı girin.</span>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="order-city">İl</label>
-            <input type="text" id="order-city" class="form-control" placeholder="İl" required />
+            <input type="text" id="order-city" class="form-control" placeholder="İl" value="${city}" required />
             <span class="error-msg">İl giriniz.</span>
           </div>
           <div class="form-group">
             <label for="order-district">İlçe</label>
-            <input type="text" id="order-district" class="form-control" placeholder="İlçe" required />
+            <input type="text" id="order-district" class="form-control" placeholder="İlçe" value="${district}" required />
             <span class="error-msg">İlçe giriniz.</span>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="order-address">Açık Adres</label>
-          <textarea id="order-address" class="form-control" rows="3" placeholder="Mahalle, cadde, sokak, bina ve kapı no" required></textarea>
-          <span class="error-msg">Lütfen açık adresinizi girin.</span>
+          <label for="order-address">Fatura Adresi</label>
+          <textarea id="order-address" class="form-control" rows="3" placeholder="Mahalle, cadde, sokak, bina ve kapı no" required>${address}</textarea>
+          <span class="error-msg">Lütfen fatura adresinizi girin.</span>
+        </div>
+
+        <div class="form-group-checkbox" style="display: flex; align-items: center; gap: 8px; margin: 0.5rem 0;">
+          <input type="checkbox" id="same-address-check" ${sameAddress ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer;" />
+          <label for="same-address-check" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: none; cursor: pointer; user-select: none;">Teslimat adresi fatura adresi ile aynı</label>
+        </div>
+
+        <div id="delivery-address-group" class="form-group" style="${sameAddress ? 'display: none;' : ''}">
+          <label for="order-delivery-address">Teslimat Adresi</label>
+          <textarea id="order-delivery-address" class="form-control" rows="2" placeholder="Siparişin gönderileceği teslimat adresi">${deliveryAddress}</textarea>
+          <span class="error-msg">Lütfen teslimat adresinizi girin.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="order-payment">Ödeme Yöntemi</label>
+          <select id="order-payment" class="form-control" style="cursor: pointer; appearance: auto;">
+            <option value="Kredi Kartı" ${paymentMethod === 'Kredi Kartı' ? 'selected' : ''}>Online Kredi Kartı</option>
+            <option value="Havale/EFT" ${paymentMethod === 'Havale/EFT' ? 'selected' : ''}>Bankaya Havale / EFT</option>
+          </select>
         </div>
 
         <div class="form-group">
           <label for="order-note">Sipariş Notu (Opsiyonel)</label>
-          <input type="text" id="order-note" class="form-control" placeholder="Varsa kargo veya ürün notunuz..." />
+          <input type="text" id="order-note" class="form-control" placeholder="Varsa kargo veya ürün notunuz..." value="${note}" />
         </div>
 
         <div style="margin-top: 1rem; border-top: 1px dashed rgba(212, 175, 55, 0.2); padding-top: 1rem;">
@@ -1136,6 +1289,27 @@
 
     // Back action
     drawerBody.querySelector('.btn-back').addEventListener('click', renderCart);
+
+    // Toggle delivery address display on sameAddressCheck change
+    const sameAddressCheck = document.getElementById('same-address-check');
+    const deliveryGroup = document.getElementById('delivery-address-group');
+    const deliveryAddressInput = document.getElementById('order-delivery-address');
+    
+    if (sameAddressCheck && deliveryGroup) {
+      sameAddressCheck.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          deliveryGroup.style.display = 'none';
+          if (deliveryAddressInput) deliveryAddressInput.removeAttribute('required');
+        } else {
+          deliveryGroup.style.display = 'flex';
+          if (deliveryAddressInput) deliveryAddressInput.setAttribute('required', 'required');
+        }
+      });
+    }
+
+    if (deliveryAddressInput && !sameAddress) {
+      deliveryAddressInput.setAttribute('required', 'required');
+    }
 
     // Numeric constraint for TC
     const tcInput = document.getElementById('order-tc');
@@ -1162,6 +1336,9 @@
     const districtInput = document.getElementById('order-district');
     const addressInput = document.getElementById('order-address');
     const noteInput = document.getElementById('order-note');
+    const sameAddressCheck = document.getElementById('same-address-check');
+    const deliveryAddressInput = document.getElementById('order-delivery-address');
+    const paymentSelect = document.getElementById('order-payment');
 
     let isValid = true;
 
@@ -1182,10 +1359,39 @@
       tcInput.classList.remove('invalid');
     }
 
+    const isSameAddress = sameAddressCheck ? sameAddressCheck.checked : true;
+    let deliveryAddressVal = addressInput.value.trim();
+    if (!isSameAddress) {
+      if (deliveryAddressInput && !deliveryAddressInput.value.trim()) {
+        deliveryAddressInput.classList.add('invalid');
+        isValid = false;
+      } else if (deliveryAddressInput) {
+        deliveryAddressInput.classList.remove('invalid');
+        deliveryAddressVal = deliveryAddressInput.value.trim();
+      }
+    }
+
     if (!isValid) {
       showToast('Lütfen formdaki tüm alanları doğru şekilde doldurun.', 'error');
       return;
     }
+
+    const paymentMethodVal = paymentSelect ? paymentSelect.value : 'Kredi Kartı';
+
+    // Save customer info in localStorage for auto-filling
+    const customerInfo = {
+      fullname: fullnameInput.value.trim(),
+      phone: phoneInput.value.trim(),
+      tc: tcVal,
+      city: cityInput.value.trim(),
+      district: districtInput.value.trim(),
+      address: addressInput.value.trim(),
+      note: noteInput ? noteInput.value.trim() : '',
+      sameAddress: isSameAddress,
+      deliveryAddress: isSameAddress ? '' : deliveryAddressVal,
+      paymentMethod: paymentMethodVal
+    };
+    localStorage.setItem('esyasam_customer_info', JSON.stringify(customerInfo));
 
     const itemsText = cart.map(item => `- ${item.quantity}x ${item.name} (${item.price * item.quantity} TL)`).join('\n');
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1196,17 +1402,21 @@
 ${itemsText}
 
 💰 TOPLAM TUTAR: ${total} TL
+💳 ÖDEME YÖNTEMİ: ${paymentMethodVal}
 ----------------------------------
 👤 ALICI KİMLİK & İLETİŞİM BİLGİLERİ:
 Ad Soyad: ${fullnameInput.value.trim()}
 Telefon: ${phoneInput.value.trim()}
 T.C. Kimlik No: ${tcVal}
 
-📍 TESLİMAT ADRESİ:
+📍 FATURA ADRESİ:
 ${addressInput.value.trim()} - ${districtInput.value.trim()} / ${cityInput.value.trim().toUpperCase()}
 
+📍 TESLİMAT ADRESİ:
+${isSameAddress ? 'Fatura Adresi ile Aynı' : `${deliveryAddressVal} - ${districtInput.value.trim()} / ${cityInput.value.trim().toUpperCase()}`}
+
 📝 MÜŞTERİ NOTU:
-${noteInput.value.trim() || 'Yok'}
+${noteInput ? (noteInput.value.trim() || 'Yok') : 'Yok'}
 ----------------------------------
 Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
 
@@ -1297,6 +1507,14 @@ Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
           cartDrawer.classList.remove('show');
           document.body.classList.remove('modal-open');
         });
+      });
+    }
+
+    // 3. Clear Cart Click
+    const clearCartBtn = document.getElementById('header-clear-cart');
+    if (clearCartBtn) {
+      clearCartBtn.addEventListener('click', () => {
+        window.clearCart();
       });
     }
   });
