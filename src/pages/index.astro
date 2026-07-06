@@ -1019,11 +1019,13 @@ function getInstagramDmUrl(productName, customLink) {
         width: 100%;
         max-width: 480px;
         height: 100%;
-        background: radial-gradient(circle at top, var(--bg-cream) 0%, var(--bg-cream-dark) 100%);
-        border-left: 1px solid rgba(212, 175, 55, 0.25);
-        box-shadow: -20px 0 60px rgba(44, 37, 32, 0.08);
+        background: rgba(250, 248, 245, 0.85);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        border-left: 1px solid rgba(212, 175, 55, 0.2);
+        box-shadow: -15px 0 40px rgba(44, 37, 32, 0.12);
         transform: translateX(100%);
-        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
         display: flex;
         flex-direction: column;
       }
@@ -1033,32 +1035,119 @@ function getInstagramDmUrl(productName, customLink) {
       }
 
       .drawer-header {
-        padding: 1.8rem 2rem;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.12);
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
 
       .drawer-header h3 {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: var(--text-dark);
+        letter-spacing: -0.01em;
       }
 
       .drawer-body {
-        padding: 1.8rem 2rem;
+        padding: 1.5rem 2rem;
         overflow-y: auto;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
       }
 
-      /* Cart Items */
+      /* Modern Checkout Stepper */
+      .checkout-stepper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem 2.5rem 0.5rem;
+        position: relative;
+        background: transparent;
+      }
+
+      .stepper-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        z-index: 2;
+        position: relative;
+      }
+
+      .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(245, 242, 235, 0.9);
+        border: 2px solid rgba(212, 175, 55, 0.2);
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .step-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .stepper-line {
+        position: absolute;
+        top: calc(1.5rem + 15px);
+        left: calc(2.5rem + 15px);
+        right: calc(2.5rem + 15px);
+        height: 2px;
+        background: rgba(212, 175, 55, 0.15);
+        z-index: 1;
+      }
+
+      .stepper-line-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(to right, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .stepper-step.active .step-number {
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        border-color: var(--brand-gold);
+        color: white;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+      }
+
+      .stepper-step.active .step-label {
+        color: var(--brand-gold-dark);
+        font-weight: 700;
+      }
+
+      .stepper-step.completed .step-number {
+        background: var(--brand-olive);
+        border-color: var(--brand-olive);
+        color: white;
+        box-shadow: 0 0 10px rgba(85, 107, 47, 0.15);
+      }
+
+      .stepper-step.completed .step-label {
+        color: var(--brand-olive);
+      }
+
+      /* Cart Items Redesign */
       .cart-items-list {
         display: flex;
         flex-direction: column;
-        gap: 1.2rem;
+        gap: 1rem;
         margin-bottom: 2rem;
       }
 
@@ -1066,89 +1155,198 @@ function getInstagramDmUrl(productName, customLink) {
         display: flex;
         gap: 1rem;
         align-items: center;
-        background: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.75);
         border: 1px solid rgba(212, 175, 55, 0.12);
-        padding: 0.8rem 1rem;
-        border-radius: 16px;
+        padding: 0.9rem 1.1rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(44, 37, 32, 0.02);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .cart-item:hover {
+        border-color: rgba(212, 175, 55, 0.35);
+        background: rgba(255, 255, 255, 0.98);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(212, 175, 55, 0.08);
       }
 
       .cart-item-img {
-        width: 70px;
-        height: 70px;
-        border-radius: 12px;
+        width: 72px;
+        height: 72px;
+        border-radius: 14px;
         object-fit: cover;
-        border: 1px solid rgba(212, 175, 55, 0.1);
+        border: 1.5px solid rgba(212, 175, 55, 0.15);
         background: white;
+        transition: border-color 0.3s ease;
+      }
+
+      .cart-item:hover .cart-item-img {
+        border-color: var(--brand-gold);
       }
 
       .cart-item-info {
         flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
       }
 
       .cart-item-name {
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 700;
         color: var(--text-dark);
-        margin-bottom: 0.2rem;
+        line-height: 1.3;
       }
 
       .cart-item-price {
-        font-size: 1rem;
-        font-weight: 600;
+        font-size: 0.95rem;
+        font-weight: 700;
         color: var(--brand-gold-dark);
       }
 
       .cart-item-controls {
         display: flex;
         align-items: center;
-        gap: 0.6rem;
+        gap: 0.5rem;
+        background: rgba(245, 242, 235, 0.8);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        padding: 3px;
+        border-radius: 20px;
       }
 
       .btn-qty {
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
         border-radius: 50%;
-        border: 1px solid rgba(212, 175, 55, 0.25);
-        background: rgba(255, 255, 255, 0.6);
+        border: none;
+        background: white;
         color: var(--text-dark);
         font-weight: bold;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .btn-qty:hover {
         background: var(--brand-gold);
         color: white;
-        border-color: var(--brand-gold);
+        transform: scale(1.1);
       }
 
       .qty-val {
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: 700;
-        min-width: 20px;
+        min-width: 22px;
         text-align: center;
+        color: var(--text-dark);
       }
 
       .btn-remove {
-        background: none;
-        border: none;
-        color: #c0392b;
+        background: rgba(231, 76, 60, 0.05);
+        border: 1px solid rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
         cursor: pointer;
-        font-size: 1.1rem;
-        padding: 4px;
-        margin-left: 0.5rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.2s ease;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .btn-remove svg {
+        width: 15px;
+        height: 15px;
+        fill: currentColor;
       }
 
       .btn-remove:hover {
-        transform: scale(1.15);
+        background: #e74c3c;
+        color: white;
+        border-color: #e74c3c;
+        transform: scale(1.1);
+      }
+
+      /* Empty Cart Design */
+      .empty-cart-view {
+        text-align: center;
+        padding: 4rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-grow: 1;
+      }
+
+      .empty-cart-icon-container {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: rgba(212, 175, 55, 0.08);
+        border: 1.5px solid rgba(212, 175, 55, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        animation: pulseGlow 2.5s infinite ease-in-out;
+      }
+
+      .empty-cart-icon-container svg {
+        width: 40px;
+        height: 40px;
+        color: var(--brand-gold);
+      }
+
+      .empty-cart-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+      }
+
+      .empty-cart-text {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        max-width: 280px;
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      .btn-start-shopping {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1.8rem;
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.2);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .btn-start-shopping:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(212, 175, 55, 0.35);
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.15); }
+        50% { transform: scale(1.04); box-shadow: 0 0 15px 4px rgba(212, 175, 55, 0.08); }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
 
       /* Cart Footer */
@@ -1245,14 +1443,14 @@ function getInstagramDmUrl(productName, customLink) {
         display: flex;
         flex-direction: column;
         gap: 1.1rem;
-        animation: slideDown 0.4s ease-out;
+        animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .form-section-title {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         font-weight: 700;
         color: var(--brand-olive);
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.8rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -1261,44 +1459,60 @@ function getInstagramDmUrl(productName, customLink) {
       .form-group {
         display: flex;
         flex-direction: column;
-        gap: 0.4rem;
+        gap: 0.45rem;
+        position: relative;
       }
 
       .form-group label {
-        font-size: 0.9rem;
-        font-weight: 600;
+        font-size: 0.85rem;
+        font-weight: 700;
         color: var(--text-dark);
+        letter-spacing: 0.01em;
+        display: flex;
+        align-items: center;
+        gap: 4px;
       }
 
       .form-control {
-        padding: 0.85rem 1.1rem;
-        border-radius: 12px;
-        border: 1px solid rgba(212, 175, 55, 0.25);
-        background: rgba(255, 255, 255, 0.7);
+        padding: 0.9rem 1.2rem;
+        border-radius: 14px;
+        border: 1.5px solid rgba(212, 175, 55, 0.2);
+        background: rgba(255, 255, 255, 0.9);
         font-family: inherit;
         font-size: 0.95rem;
         color: var(--text-dark);
         outline: none;
-        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(44, 37, 32, 0.01);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .form-control::placeholder {
+        color: #b2a99f;
+        opacity: 0.8;
       }
 
       .form-control:focus {
         border-color: var(--brand-gold-dark);
         background: white;
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12), inset 0 2px 4px rgba(44, 37, 32, 0.01);
       }
 
       .form-control.invalid {
         border-color: #e74c3c;
-        background: rgba(231, 76, 60, 0.05);
+        background: rgba(231, 76, 60, 0.02);
+      }
+
+      .form-control.invalid:focus {
+        box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
       }
 
       .error-msg {
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         color: #e74c3c;
-        font-weight: 500;
-        margin-top: -2px;
+        font-weight: 600;
+        margin-top: 2px;
         display: none;
+        animation: fadeIn 0.2s ease-out;
       }
 
       .form-control.invalid + .error-msg {
@@ -1308,29 +1522,31 @@ function getInstagramDmUrl(productName, customLink) {
       .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: 1.2rem;
       }
 
       .btn-back {
         background: none;
-        border: 1px solid rgba(212, 175, 55, 0.3);
+        border: 1px solid rgba(212, 175, 55, 0.25);
         color: var(--text-muted);
-        padding: 0.5rem 1rem;
-        border-radius: 10px;
-        font-size: 0.9rem;
+        padding: 0.6rem 1.1rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
         font-weight: 600;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
         align-self: flex-start;
-        margin-bottom: 1rem;
-        transition: all 0.2s ease;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .btn-back:hover {
-        background: rgba(212, 175, 55, 0.1);
+        background: rgba(212, 175, 55, 0.08);
         color: var(--text-dark);
+        border-color: var(--brand-gold);
+        transform: translateX(-3px);
       }
 
       /* Image Slideshow / Gallery */
@@ -1800,6 +2016,21 @@ function getInstagramDmUrl(productName, customLink) {
     <div id="cart-drawer" class="drawer">
       <div class="drawer-backdrop"></div>
       <div class="drawer-content">
+        <!-- Progress Stepper -->
+        <div class="checkout-stepper">
+          <div class="stepper-line">
+            <div id="stepper-progress" class="stepper-line-progress"></div>
+          </div>
+          <div id="step-1-indicator" class="stepper-step active">
+            <div class="step-number">1</div>
+            <span class="step-label">Sepetim</span>
+          </div>
+          <div id="step-2-indicator" class="stepper-step">
+            <div class="step-number">2</div>
+            <span class="step-label">Bilgiler</span>
+          </div>
+        </div>
+
         <div class="drawer-header">
           <h3>Alışveriş Sepetim</h3>
           <button class="drawer-close">×</button>
@@ -1928,20 +2159,67 @@ function getInstagramDmUrl(productName, customLink) {
       // ==========================================
       // CART DRAWER RENDER
       // ==========================================
+      function updateStepper(step) {
+        const step1 = document.getElementById('step-1-indicator');
+        const step2 = document.getElementById('step-2-indicator');
+        const progress = document.getElementById('stepper-progress');
+        if (!step1 || !step2 || !progress) return;
+
+        if (step === 1) {
+          step1.className = 'stepper-step active';
+          step2.className = 'stepper-step';
+          progress.style.width = '0%';
+        } else if (step === 2) {
+          step1.className = 'stepper-step completed';
+          step2.className = 'stepper-step active';
+          progress.style.width = '100%';
+        }
+      }
+
       function renderCart() {
         const drawerBody = document.querySelector('#cart-drawer .drawer-body');
         if (!drawerBody) return;
 
+        // Toggle stepper visibility
+        const stepper = document.querySelector('#cart-drawer .checkout-stepper');
+        if (stepper) {
+          stepper.style.display = cart.length === 0 ? 'none' : 'flex';
+        }
+
         if (cart.length === 0) {
           drawerBody.innerHTML = `
             <div class="empty-cart-view">
-              <span class="empty-cart-icon">🛒</span>
-              <h4 style="font-weight: 700; color: var(--text-dark);">Sepetiniz Boş</h4>
+              <div class="empty-cart-icon-container">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+              </div>
+              <h4 class="empty-cart-title">Sepetiniz Boş</h4>
               <p class="empty-cart-text">Doğal ve lüks formüllere sahip ürünlerimizden dilediğinizi ekleyip siparişinizi oluşturun!</p>
+              <button class="btn-start-shopping">
+                <span>Alışverişe Başla</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
             </div>
           `;
+          // Close drawer on "Alışverişe Başla" click
+          const startShopBtn = drawerBody.querySelector('.btn-start-shopping');
+          if (startShopBtn) {
+            startShopBtn.addEventListener('click', () => {
+              document.getElementById('cart-drawer').classList.remove('show');
+              document.body.classList.remove('modal-open');
+            });
+          }
           return;
         }
+
+        // Update stepper progress
+        updateStepper(1);
 
         let cartItemsHtml = cart.map(item => `
           <div class="cart-item" data-id="${item.id}">
@@ -1955,7 +2233,11 @@ function getInstagramDmUrl(productName, customLink) {
               <span class="qty-val">${item.quantity}</span>
               <button class="btn-qty btn-plus" data-id="${item.id}">＋</button>
             </div>
-            <button class="btn-remove" data-id="${item.id}">🗑️</button>
+            <button class="btn-remove" data-id="${item.id}" title="Sepetten Çıkar">
+              <svg viewBox="0 0 24 24">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+              </svg>
+            </button>
           </div>
         `).join('');
 
@@ -2001,6 +2283,12 @@ function getInstagramDmUrl(productName, customLink) {
       function renderCheckoutForm() {
         const drawerBody = document.querySelector('#cart-drawer .drawer-body');
         if (!drawerBody) return;
+
+        // Scroll to top of the drawer smoothly
+        drawerBody.scrollTop = 0;
+
+        // Update stepper progress
+        updateStepper(2);
 
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
