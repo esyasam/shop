@@ -1,220 +1,792 @@
 ---
-// ES Yaşam - Hoş Geldiniz Açılış Sayfası
+// ES Yaşam - Premium Tek Sayfalık E-Ticaret Vitrini (Instagram Satış Sayfası Tasarımı)
+
+const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
+const url = `${databaseUrl}/products.json`;
+
+let products = [];
+let dbError = false;
+
+try {
+  const response = await fetch(url);
+  if (response.ok) {
+    const data = await response.json();
+    if (data) {
+      products = Object.values(data);
+    }
+  } else {
+    dbError = true;
+  }
+} catch (error) {
+  console.error("Firebase veritabanından ürünler çekilirken hata oluştu:", error);
+  dbError = true;
+}
+
+// Eğer veritabanı boşsa veya hata alındıysa, marka standartlarımıza uygun premium yedek (fallback) verileri gösteriyoruz
+if (products.length === 0) {
+  products = [
+    {
+      id: "leke-cikartici",
+      name: "Leke Çıkartıcı",
+      salePrice: 150,
+      features: "Viral temizlik ürünü\nHer türlü zorlu lekeyi saniyeler içinde çıkarır\nKumaş ve yüzey dokusuna zarar vermez\nPratik ve hızlı kullanım",
+      image: "/images/products/leke-cikartici/cover.webp",
+      video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      links: "https://instagram.com/es_yasam"
+    },
+    {
+      id: "sari-guc",
+      name: "Sarı Güç",
+      salePrice: 120,
+      features: "Çok amaçlı ultra temizleyici\nYağ, kir ve kireç üzerinde tam etki\nMutfak, banyo ve tüm yüzeylerde güvenli\nFerahlatıcı organik limon kokusu",
+      image: "/images/products/sari-guc/cover.webp",
+      video: "",
+      links: "https://instagram.com/es_yasam"
+    },
+    {
+      id: "mavi-guc",
+      name: "Mavi Güç",
+      salePrice: 130,
+      features: "Ultra yoğun temizlik gücü\nZorlu kirler ve derinlemesine hijyen\nYüzeyleri parlatır ve özel koruma sağlar\nUzun süreli kalıcı lüks ferahlık",
+      image: "/images/products/mavi-guc/cover.webp",
+      video: "",
+      links: "https://instagram.com/es_yasam"
+    }
+  ];
+}
+
+/**
+ * YouTube linklerini (Shorts dahil) otomatik olarak embed koduna çeviren akıllı yardımcı fonksiyon.
+ */
+function getYoutubeEmbedUrl(url) {
+  if (!url) return null;
+  let videoId = "";
+  
+  if (url.includes("youtube.com/shorts/")) {
+    videoId = url.split("youtube.com/shorts/")[1].split("?")[0].split("&")[0];
+  } else if (url.includes("youtu.be/")) {
+    videoId = url.split("youtu.be/")[1].split("?")[0].split("&")[0];
+  } else if (url.includes("v=")) {
+    videoId = url.split("v=")[1].split("&")[0];
+  } else if (url.length === 11) {
+    videoId = url;
+  }
+  
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+}
+
+/**
+ * E-tablodaki resim isimlerini veya boş yolları akıllı klasör yapımızla eşleyen yardımcı fonksiyon.
+ */
+function resolveProductImage(image, id) {
+  if (!image) {
+    return `/images/products/${id}/cover.webp`;
+  }
+  if (!image.includes("/")) {
+    return `/images/products/${id}/${image}`;
+  }
+  return image;
+}
 ---
 
 <html lang="tr">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="generator" content={Astro.generator} />
-		<title>ES Yaşam - Daha güzel bir yaşam için</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-		<style>
-			:root {
-				--brand-gold: #d4af37;
-				--brand-gold-dark: #c5a028;
-				--brand-olive: #556b2f;
-				--brand-olive-light: #8fbc8f;
-				--bg-cream: #FAF8F5;
-				--bg-cream-dark: #F5F2EB;
-				--text-dark: #2c2520;
-				--text-muted: #6e645e;
-			}
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- SEO Meta Etiketleri -->
+    <title>ES Yaşam - Daha güzel bir yaşam için | Premium Mağaza</title>
+    <meta name="description" content="Leke Çıkartıcı, Sarı Güç ve Mavi Güç lansman ürünlerimiz için hazırlanan ultra-premium, yüksek dönüşümlü e-ticaret satış sayfamız. Tüm ürünlerimizi inceleyin ve Instagram @es_yasam üzerinden kolayca sipariş verin." />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+        --brand-gold: #d4af37;
+        --brand-gold-dark: #c5a028;
+        --brand-olive: #556b2f;
+        --brand-olive-light: #8fbc8f;
+        --bg-cream: #FAF8F5;
+        --bg-cream-dark: #F5F2EB;
+        --text-dark: #2c2520;
+        --text-muted: #6e645e;
+      }
 
-			* {
-				box-sizing: border-box;
-				margin: 0;
-				padding: 0;
-			}
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-			body {
-				font-family: 'Outfit', sans-serif;
-				background: radial-gradient(circle at top, var(--bg-cream) 0%, var(--bg-cream-dark) 100%);
-				color: var(--text-dark);
-				min-height: 100vh;
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				justify-content: center;
-				overflow-x: hidden;
-				position: relative;
-			}
+      body {
+        font-family: 'Outfit', sans-serif;
+        background: radial-gradient(circle at top, var(--bg-cream) 0%, var(--bg-cream-dark) 100%);
+        color: var(--text-dark);
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+        line-height: 1.5;
+      }
 
-			/* Arka Plan Yaprak Süslemeleri */
-			body::before, body::after {
-				content: '';
-				position: absolute;
-				width: 300px;
-				height: 300px;
-				opacity: 0.08;
-				background-image: radial-gradient(var(--brand-olive) 1px, transparent 1px);
-				background-size: 24px 24px;
-				pointer-events: none;
-			}
-			body::before { top: 5%; left: 5%; }
-			body::after { bottom: 5%; right: 5%; }
+      /* Dekoratif Arka Plan Yaprak Desenleri */
+      body::before, body::after {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        opacity: 0.05;
+        background-image: radial-gradient(var(--brand-olive) 1.5px, transparent 1px);
+        background-size: 32px 32px;
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::before { top: 2%; left: -100px; }
+      body::after { bottom: 10%; right: -100px; }
 
-			.container {
-				max-width: 600px;
-				width: 90%;
-				text-align: center;
-				padding: 3rem 2rem;
-				border-radius: 24px;
-				background: rgba(255, 255, 255, 0.4);
-				backdrop-filter: blur(20px);
-				-webkit-backdrop-filter: blur(20px);
-				border: 1px solid rgba(212, 175, 55, 0.15);
-				box-shadow: 0 20px 50px rgba(44, 37, 32, 0.05);
-				animation: fadeIn 1s ease-out;
-			}
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+        position: relative;
+        z-index: 1;
+      }
 
-			.logo-wrapper {
-				position: relative;
-				display: inline-block;
-				margin-bottom: 2rem;
-			}
+      /* Header Tasarımı */
+      header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 3.5rem;
+        animation: fadeInDown 0.8s ease-out;
+      }
 
-			.logo-ring {
-				position: absolute;
-				top: -10px;
-				left: -10px;
-				right: -10px;
-				bottom: -10px;
-				border: 2px dashed rgba(212, 175, 55, 0.3);
-				border-radius: 50%;
-				animation: rotate 40s linear infinite;
-			}
+      .logo-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+      }
 
-			.logo-img {
-				width: 150px;
-				height: 150px;
-				border-radius: 50%;
-				object-fit: cover;
-				border: 3px solid var(--brand-gold);
-				box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
-			}
+      .logo-ring {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border: 2px dashed rgba(212, 175, 55, 0.35);
+        border-radius: 50%;
+        animation: rotate 50s linear infinite;
+      }
 
-			h1 {
-				font-size: 2.5rem;
-				font-weight: 600;
-				color: var(--text-dark);
-				margin-bottom: 0.5rem;
-				letter-spacing: -0.5px;
-			}
+      .logo-img {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--brand-gold);
+        box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
+      }
 
-			h1 span {
-				color: var(--brand-gold-dark);
-			}
+      h1 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: -1px;
+        color: var(--text-dark);
+        margin-bottom: 0.2rem;
+      }
 
-			.slogan {
-				font-size: 1.1rem;
-				font-weight: 400;
-				font-style: italic;
-				color: var(--brand-olive);
-				margin-bottom: 2rem;
-			}
+      h1 span {
+        color: var(--brand-gold-dark);
+      }
 
-			.divider {
-				width: 60px;
-				height: 3px;
-				background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
-				margin: 1.5rem auto;
-			}
+      .slogan {
+        font-size: 1.15rem;
+        font-weight: 400;
+        font-style: italic;
+        color: var(--brand-olive);
+        letter-spacing: 1px;
+      }
 
-			.success-badge {
-				display: inline-flex;
-				align-items: center;
-				gap: 0.5rem;
-				background: rgba(85, 107, 47, 0.1);
-				color: var(--brand-olive);
-				padding: 0.5rem 1.2rem;
-				border-radius: 50px;
-				font-size: 0.9rem;
-				font-weight: 500;
-				margin-bottom: 1.5rem;
-				border: 1px solid rgba(85, 107, 47, 0.15);
-			}
+      .divider {
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
+        margin: 1.5rem auto 1rem;
+      }
 
-			p.desc {
-				font-size: 1rem;
-				line-height: 1.6;
-				color: var(--text-muted);
-				margin-bottom: 2.5rem;
-			}
+      /* Tanıtım / Hoş Geldiniz Kartı */
+      .intro-card {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.15);
+        border-radius: 24px;
+        padding: 2rem;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 4rem;
+        box-shadow: 0 15px 45px rgba(44, 37, 32, 0.03);
+        animation: fadeInUp 0.8s ease-out;
+      }
 
-			.btn {
-				display: inline-block;
-				width: 100%;
-				padding: 1rem 2rem;
-				background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
-				color: white;
-				text-decoration: none;
-				border-radius: 12px;
-				font-weight: 600;
-				font-size: 1rem;
-				box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
-				transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-				border: none;
-				cursor: pointer;
-			}
+      .intro-card p {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        line-height: 1.7;
+      }
 
-			.btn:hover {
-				transform: translateY(-3px);
-				box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
-			}
+      /* Bölüm Başlıkları */
+      .section-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 2.5rem;
+        position: relative;
+      }
 
-			.btn:active {
-				transform: translateY(-1px);
-			}
+      .section-title span {
+        color: var(--brand-gold-dark);
+      }
 
-			.footer {
-				margin-top: 3rem;
-				font-size: 0.85rem;
-				color: var(--text-muted);
-				opacity: 0.8;
-			}
+      .section-title::after {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 3px;
+        background: var(--brand-gold);
+        margin: 0.7rem auto 0;
+        border-radius: 2px;
+      }
 
-			@keyframes fadeIn {
-				from { opacity: 0; transform: translateY(20px); }
-				to { opacity: 1; transform: translateY(0); }
-			}
+      /* Ürün Izgarası (Products Grid) */
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2.5rem;
+        margin-bottom: 5rem;
+        animation: fadeInUp 1s ease-out;
+      }
 
-			@keyframes rotate {
-				100% { transform: rotate(360deg); }
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<div class="logo-wrapper">
-				<div class="logo-ring"></div>
-				<img src="/images/logo.jpg" alt="ES Yaşam Logo" class="logo-img" />
-			</div>
+      @media (min-width: 992px) {
+        /* Ürün tek veya iki taneyse çok yayılmaması için ortalıyoruz */
+        .products-grid {
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .product-card {
+          flex: 1 1 360px;
+          max-width: 380px;
+        }
+      }
 
-			<div class="success-badge">
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-				Astro Projesi Başarıyla Kuruldu
-			</div>
+      /* Ürün Kartı (Glassmorphic Card) */
+      .product-card {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.18);
+        border-radius: 24px;
+        padding: 1.8rem;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 50px rgba(44, 37, 32, 0.04);
+        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
+        position: relative;
+        overflow: hidden;
+      }
 
-			<h1>ES <span>Yaşam</span></h1>
-			<p class="slogan">"Daha güzel bir yaşam için"</p>
-			
-			<div class="divider"></div>
+      .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 30px 60px rgba(212, 175, 55, 0.12);
+        border-color: rgba(212, 175, 55, 0.35);
+      }
 
-			<p class="desc">
-				Leke Çıkartıcı, Sarı Güç ve Mavi Güç lansman ürünlerimiz için hazırlanan ultra-premium, yüksek dönüşümlü e-ticaret satış sayfamıza hoş geldiniz. Ürünlerimizi incelemek, güncel duyuruları takip etmek ve sipariş vermek için bizi sosyal medyada takip edebilirsiniz.
-			</p>
+      /* Viral / Yeni Ürün Rozeti */
+      .badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+        z-index: 2;
+      }
 
-			<a href="https://instagram.com/es_yasam" target="_blank" class="btn">
-				Bizi Instagram'da Keşfedin: @es_yasam
-			</a>
-		</div>
+      /* Ürün Görsel Çerçevesi */
+      .product-img-wrapper {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        background: #FDFDFD;
+      }
 
-		<div class="footer">
-			© 2026 ES Yaşam & Uçbeyi Gıda. Tüm hakları saklıdır.
-		</div>
-	</body>
+      .product-img-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border: 1px dashed rgba(212, 175, 55, 0.2);
+        border-radius: 12px;
+        pointer-events: none;
+      }
+
+      .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+
+      .product-card:hover .product-img {
+        transform: scale(1.05);
+      }
+
+      .product-info {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .product-name {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+      }
+
+      /* Fiyat Tasarımı */
+      .price-box {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .price-old {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        text-decoration: line-through;
+        opacity: 0.7;
+      }
+
+      .price-sale {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--brand-gold-dark);
+        letter-spacing: -0.5px;
+      }
+
+      /* Özellikler Listesi */
+      .features-list {
+        list-style: none;
+        margin-bottom: 1.8rem;
+        flex-grow: 1;
+      }
+
+      .features-list li {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        text-align: left;
+        line-height: 1.4;
+      }
+
+      .features-list li .bullet {
+        color: var(--brand-gold);
+        font-weight: bold;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* YouTube Video Alanı */
+      .video-box {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16/9;
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(212, 175, 55, 0.15);
+        box-shadow: 0 8px 20px rgba(44, 37, 32, 0.05);
+      }
+
+      .video-box iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* Sipariş CTA Butonu */
+      .btn-order {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        padding: 1.1rem 2rem;
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 1.05rem;
+        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+        border: none;
+        cursor: pointer;
+        z-index: 1;
+      }
+
+      .btn-order::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-25deg);
+        transition: 0.75s;
+        z-index: -1;
+      }
+
+      .btn-order:hover::before {
+        left: 150%;
+        transition: 0.75s;
+      }
+
+      .btn-order:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(212, 175, 55, 0.35);
+      }
+
+      .btn-order:active {
+        transform: translateY(-1px);
+      }
+
+      .btn-order svg {
+        transition: transform 0.3s ease;
+      }
+
+      .btn-order:hover svg {
+        transform: translateX(4px);
+      }
+
+      /* SIPARIŞ ADIMLARI (Instagram Satış Akışı) */
+      .order-steps-section {
+        margin: 6rem auto 5rem;
+        max-width: 950px;
+        text-align: center;
+      }
+
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .step-card {
+        background: rgba(255, 255, 255, 0.35);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.12);
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(44, 37, 32, 0.02);
+      }
+
+      .step-number {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin: 0 auto 1.2rem;
+        box-shadow: 0 5px 15px rgba(212, 175, 55, 0.25);
+      }
+
+      .step-card h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.6rem;
+      }
+
+      .step-card p {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* DEĞERLERİMİZ (Neden Biz?) */
+      .values-section {
+        background: rgba(85, 107, 47, 0.05);
+        border: 1px solid rgba(85, 107, 47, 0.1);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        margin-bottom: 5rem;
+        text-align: center;
+      }
+
+      .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2.5rem;
+        margin-top: 2.5rem;
+      }
+
+      .value-item h4 {
+        font-size: 1.25rem;
+        color: var(--brand-olive);
+        margin-bottom: 0.8rem;
+        font-weight: 600;
+      }
+
+      .value-item p {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+
+      /* Altbilgi (Footer) */
+      footer {
+        text-align: center;
+        padding: 3rem 0;
+        margin-top: auto;
+        border-top: 1px solid rgba(212, 175, 55, 0.1);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      footer .social-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--brand-gold-dark);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 1.5rem;
+        transition: color 0.3s ease;
+      }
+
+      footer .social-link:hover {
+        color: var(--brand-olive);
+      }
+
+      footer .copyright {
+        opacity: 0.75;
+      }
+
+      /* Animasyonlar */
+      @keyframes rotate {
+        100% { transform: rotate(360deg); }
+      }
+
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      
+      <!-- Üstbilgi (Header) -->
+      <header>
+        <div class="logo-wrapper">
+          <div class="logo-ring"></div>
+          <img src="/images/logo.jpg" alt="ES Yaşam Logo" class="logo-img" />
+        </div>
+        <h1>ES <span>Yaşam</span></h1>
+        <p class="slogan">"Daha güzel bir yaşam için"</p>
+        <div class="divider"></div>
+      </header>
+
+      <!-- Hoş Geldiniz Açıklaması -->
+      <section class="intro-card">
+        <p>
+          Doğadan ilham alan, lüks formüllere sahip temizlik ürünlerimizle tanışın. E-tablomuzdan anlık olarak güncellenen stoklarımız ile lansman ürünlerimiz olan Leke Çıkartıcı, Sarı Güç ve Mavi Güç burada listelenmektedir. Ürün özelliklerini inceleyin ve Instagram DM üzerinden bizimle iletişime geçerek kolayca sipariş verin!
+        </p>
+      </section>
+
+      <!-- Ürünler Alanı -->
+      <section id="products">
+        <h2 class="section-title">Lansman <span>Ürünlerimiz</span></h2>
+        
+        <div class="products-grid">
+          {products.map(product => {
+            const resolvedImg = resolveProductImage(product.image, product.id);
+            const embedVideo = getYoutubeEmbedUrl(product.video);
+            
+            // Satış fiyatına göre hayali bir eski fiyat hesaplayarak indirim hissiyatı veriyoruz (Insta satış sayfası tarzı)
+            const oldPrice = Math.round(product.salePrice * 1.4);
+            
+            return (
+              <div class="product-card" id={`product-${product.id}`}>
+                {/* Rozet */}
+                <div class="badge">VİRAL ÜRÜN</div>
+                
+                {/* Ürün Görseli */}
+                <div class="product-img-wrapper">
+                  <img src={resolvedImg} alt={product.name} class="product-img" loading="lazy" />
+                </div>
+                
+                <div class="product-info">
+                  {/* Başlık ve Fiyat */}
+                  <h3 class="product-name">{product.name}</h3>
+                  
+                  <div class="price-box">
+                    <span class="price-old">{oldPrice} TL</span>
+                    <span class="price-sale">{product.salePrice} TL</span>
+                  </div>
+                  
+                  {/* Detaylar / Özellikler */}
+                  <ul class="features-list">
+                    {product.features.split('\n').filter(Boolean).map(feature => (
+                      <li>
+                        <span class="bullet">✦</span>
+                        <span>{feature.replace(/^[✓\s*-]+/, '')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  {/* YouTube Tanıtım Videosu (Varsa) */}
+                  {embedVideo && (
+                    <div class="video-box">
+                      <iframe 
+                        src={embedVideo} 
+                        title={`${product.name} Tanıtım Videosu`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen
+                      ></iframe>
+                    </div>
+                  )}
+                  
+                  {/* Satın Alma / Sipariş CTA */}
+                  <a href={product.links || "https://instagram.com/es_yasam"} target="_blank" class="btn-order">
+                    <span>Instagram'da Sipariş Ver</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <!-- SATIN ALMA SÜREÇLERİ (Sıkıntısız ve Hızlı İletişim Akışı) -->
+      <section class="order-steps-section">
+        <h2 class="section-title">Kolay Sipariş <span>Süreci</span></h2>
+        <p style="color: var(--text-muted); text-align: center; max-width: 600px; margin: 0 auto;">
+          Sitemizde karmaşık sepetler veya uzun üyelik formları yok! Siparişinizi en samimi ve en hızlı yoldan tamamlıyoruz.
+        </p>
+        
+        <div class="steps-grid">
+          <!-- 1. Adım -->
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <h4>Ürünü Seçin</h4>
+            <p>E-tablodan anlık güncellenen sayfamızdan dilediğiniz ürünü, özelliklerini ve viral kullanım videolarını inceleyin.</p>
+          </div>
+          
+          <!-- 2. Adım -->
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <h4>Instagram'dan Yazın</h4>
+            <p>Ürün altındaki butonlara tıklayarak doğrudan resmi hesabımız olan <strong>@es_yasam</strong> DM kutusuna bağlanın ve siparişinizi iletin.</p>
+          </div>
+          
+          <!-- 3. Adım -->
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <h4>Kapınıza Gelsin</h4>
+            <p>Sizin için özel olarak lüks kırılma korumalı paketlenen ürünleriniz en kısa sürede adresinize kargolanır ve teslim edilir.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEĞERLERİMİZ (Neden ES Yaşam?) -->
+      <section class="values-section">
+        <h2 class="section-title">Neden <span>ES Yaşam?</span></h2>
+        
+        <div class="values-grid">
+          <div class="value-item">
+            <h4>🌿 Doğal ve Güçlü Formül</h4>
+            <p>Temizliği lüks hissettiren, doğadan esinlenmiş yoğun bitkisel özler ve maksimum hijyen gücü.</p>
+          </div>
+          
+          <div class="value-item">
+            <h4>✨ Premium Deneyim</h4>
+            <p>Altın yaldızlı özel logomuzdan, cam morfolojisi tasarımlarımıza kadar her detayında seçkin bir dokunuş.</p>
+          </div>
+          
+          <div class="value-item">
+            <h4>💬 Samimi İletişim</h4>
+            <p>Robotlar veya otomatik telesekreterler yok; Instagram DM üzerinden her zaman doğrudan bizimle görüşün.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Altbilgi (Footer) -->
+    <footer>
+      <a href="https://instagram.com/es_yasam" target="_blank" class="social-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+        </svg>
+        Instagram'da Bizi Takip Edin: @es_yasam
+      </a>
+      <div class="copyright">
+        © 2026 ES Yaşam & Uçbeyi Gıda. Tüm hakları saklıdır. <br />
+        <span style="font-size: 0.8rem; opacity: 0.7;">Powered by Firebase Realtime DB & Astro Static Architecture</span>
+      </div>
+    </footer>
+  </body>
 </html>
+

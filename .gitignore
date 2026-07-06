@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# firebase service accounts & private keys
+*-firebase-adminsdk-*.json
+*-adminsdk-*.json
+esyasam77-firebase-adminsdk-*.json
+
