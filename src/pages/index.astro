@@ -993,6 +993,7 @@ function getInstagramDmUrl(productName, customLink) {
                 <div 
                   class="product-card" 
                   id={`product-${product.id}`}
+                  data-image={resolvedImg}
                 >
                   <a href={`/urun/${product.id}`} class="product-card-link">
                     <div class="badge">VİRAL ÜRÜN</div>
@@ -1297,21 +1298,6 @@ function getInstagramDmUrl(productName, customLink) {
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
 
-      // İstemci tarafı akıllı görsel çözücü (Çoklu resim tanımlarında ilk resmi kapak resmi yapar)
-      function resolveProductImageClient(image, id) {
-        let firstImage = image;
-        if (image && image.includes(',')) {
-          firstImage = image.split(',')[0].trim();
-        }
-        if (firstImage && !firstImage.includes("/")) {
-          return `/images/${firstImage}`;
-        }
-        if (!firstImage) {
-          return `/images/stok_logo.webp`;
-        }
-        return firstImage;
-      }
-
       // Firebase /products düğümünü canlı (real-time) olarak dinle
       onValue(ref(db, 'products'), (snapshot) => {
         const data = snapshot.val();
@@ -1339,7 +1325,15 @@ function getInstagramDmUrl(productName, customLink) {
           const hasCampaign = !isNaN(campaignPriceNum) && campaignPriceNum > 0 && campaignPriceNum < salePriceNum;
           const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
           const originalPrice = hasCampaign ? salePriceNum : null;
-          const resolvedImg = resolveProductImageClient(product.image, product.id);
+          
+          // Görseli derleme zamanında tespit edilen (data-image) özelliğinden al
+          let resolvedImg = `/images/stok_logo.webp`;
+          if (card) {
+            resolvedImg = card.getAttribute('data-image') || `/images/stok_logo.webp`;
+          } else {
+            // Eğer tamamen yeni eklenen bir ürünse, varsayılan olarak ID.webp veya stok_logo'ya yönlendir
+            resolvedImg = `/images/${product.id}.webp`;
+          }
 
           if (card) {
             // Ürün zaten ekranda var, bilgilerini yumuşak bir şekilde güncelle:
@@ -1399,6 +1393,7 @@ function getInstagramDmUrl(productName, customLink) {
             const newCard = document.createElement('div');
             newCard.className = 'product-card';
             newCard.id = `product-${product.id}`;
+            newCard.setAttribute('data-image', resolvedImg);
 
             newCard.innerHTML = `
               <a href="/urun/${product.id}" class="product-card-link">
@@ -1409,6 +1404,7 @@ function getInstagramDmUrl(productName, customLink) {
                     alt="${product.name}" 
                     class="product-img" 
                     loading="lazy"
+                    onerror="this.onerror=null; this.src='/images/stok_logo.webp';"
                   />
                 </div>
                 <div class="product-info">

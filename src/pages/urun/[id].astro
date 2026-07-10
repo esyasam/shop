@@ -1369,7 +1369,7 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
       <section class="hero-grid">
         
         <!-- Sol: Görsel slideshow -->
-        <div class="detail-media-card">
+        <div class="detail-media-card" data-build-images={JSON.stringify(imagesList)}>
           <div class="slideshow-wrapper">
             {imagesList.map((img, index) => (
               <img 
@@ -1811,41 +1811,6 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
 
-      // İstemci tarafı akıllı görsel çözücü (Kapak Resmi)
-      function resolveProductImageClient(image, id) {
-        let firstImage = image;
-        if (image && image.includes(',')) {
-          firstImage = image.split(',')[0].trim();
-        }
-        if (firstImage && !firstImage.includes("/")) {
-          return `/images/${firstImage}`;
-        }
-        if (!firstImage) {
-          return `/images/stok_logo.webp`;
-        }
-        return firstImage;
-      }
-
-      // İstemci tarafı çoklu görsel listesi çözücü
-      function getProductImagesListClient(imageField, productId) {
-        if (imageField && imageField.trim() !== "") {
-          let images = [];
-          if (imageField.includes(',')) {
-            images = imageField.split(',').map(img => img.trim());
-          } else {
-            images = [imageField.trim()];
-          }
-          return images.map(img => {
-            if (!img.includes('/')) {
-              return `/images/${img}`;
-            }
-            return img;
-          });
-        }
-        // Eğer Firebase görseli boşsa, ID.webp veya stok_logo'ya dön
-        return [`/images/${productId}.webp`];
-      }
-
       // Slayt kontrollerini dinamik olarak yeniden bağla (Rebind Events)
       function rebindSlideshowControls() {
         const prevBtn = document.getElementById('prev-slide-btn');
@@ -1888,16 +1853,9 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         const mediaCard = document.querySelector('.detail-media-card');
         if (!mediaCard) return;
 
-        // Yüklenme sırasında stok_logo.webp veya ID.webp kontrolü yaparak kırık görseli engelle:
-        const checkedImagesList = imagesList.map(img => {
-          // Eğer görsel /images/stok_logo.webp değilse ve ID.webp de değilse, ama tarayıcıda yüklenemezse 
-          // onerror handler'ı ile stok_logo.webp'ye otomatik düşecektir.
-          return img;
-        });
-
         let slideshowHtml = `
           <div class="slideshow-wrapper">
-            ${checkedImagesList.map((img, index) => `
+            ${imagesList.map((img, index) => `
               <img 
                 src="${img}" 
                 alt="${productName} Görsel ${index + 1}" 
@@ -1908,20 +1866,20 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
               />
             `).join('')}
             
-            ${checkedImagesList.length > 1 ? `
+            ${imagesList.length > 1 ? `
               <button class="slide-btn slide-prev" id="prev-slide-btn">❮</button>
               <button class="slide-btn slide-next" id="next-slide-btn">❯</button>
               <div class="slide-dots">
-                ${checkedImagesList.map((_, index) => `
+                ${imagesList.map((_, index) => `
                   <span class="dot ${index === 0 ? 'active' : ''}" data-index="${index}"></span>
                 `).join('')}
               </div>
             ` : ''}
           </div>
 
-          ${checkedImagesList.length > 1 ? `
+          ${imagesList.length > 1 ? `
             <div class="slides-thumbnails">
-              ${checkedImagesList.map((img, index) => `
+              ${imagesList.map((img, index) => `
                 <button class="thumb-btn ${index === 0 ? 'active' : ''}" data-index="${index}">
                   <img src="${img}" alt="Küçük Görsel" onerror="this.onerror=null; this.src='/images/stok_logo.webp';" />
                 </button>
@@ -1956,7 +1914,12 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
           const hasCampaign = !isNaN(campaignPriceNum) && campaignPriceNum > 0 && campaignPriceNum < salePriceNum;
           const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
           const originalPrice = hasCampaign ? salePriceNum : null;
-          const resolvedImg = resolveProductImageClient(product.image, product.id);
+
+          // Görselleri derleme zamanında tespit edilen (data-build-images) özelliğinden al
+          const mediaCard = document.querySelector('.detail-media-card');
+          const buildImagesAttr = mediaCard ? mediaCard.getAttribute('data-build-images') : null;
+          const imagesList = buildImagesAttr ? JSON.parse(buildImagesAttr) : [`/images/${product.id}.webp`];
+          const resolvedImg = imagesList[0] || `/images/stok_logo.webp`;
 
           // 1. Ürün Adını Güncelle
           const titleEl = document.querySelector('.detail-title');
@@ -1965,7 +1928,6 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
           }
 
           // 2. Çoklu Görselleri/Slayt Gösterisini Canlı Güncelle
-          const imagesList = getProductImagesListClient(product.image, product.id);
           updateDetailPageSlideshow(imagesList, product.name);
 
           // 3. Özellikler Listesini Güncelle
