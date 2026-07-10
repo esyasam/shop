@@ -39,111 +39,71 @@ const hasCampaign = !isNaN(campaignPriceNum) && campaignPriceNum > 0 && campaign
 const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
 const originalPrice = hasCampaign ? salePriceNum : null;
 
-// Görsel çözme (Kapak Resmi İçin)
-function resolveProductImage(image, id) {
-  // Eğer çoklu görsel varsa, ilk görseli kapak resmi yap
-  let firstImage = image;
-  if (image && image.includes(',')) {
-    firstImage = image.split(',')[0].trim();
-  }
-
-  // 1. Belirtilen görsel adının direkt public/images altında olup olmadığını kontrol et (Öncelikli)
-  if (firstImage && !firstImage.includes("/")) {
-    try {
-      const directPath = path.join(process.cwd(), 'public', 'images', firstImage);
-      if (fs.existsSync(directPath)) {
-        return `/images/${firstImage}`;
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  // 2. Ürün ID'si ile eşleşen bir görselin direkt public/images altında olup olmadığını kontrol et (ör. 50200.webp)
-  try {
-    const idPath = path.join(process.cwd(), 'public', 'images', `${id}.webp`);
-    if (fs.existsSync(idPath)) {
-      return `/images/${id}.webp`;
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  // 3. Resmi bulunmayan ürünler için stok_logo.webp kontrolü ve fallback kullanımı
-  try {
-    const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'stok_logo.webp');
-    if (fs.existsSync(defaultLogoPath)) {
-      return '/images/stok_logo.webp';
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  // 4. Klasik/eski eşleme mantığı (fallback)
-  if (!firstImage) {
-    return `/images/products/${id}/cover.webp`;
-  }
-  if (!firstImage.includes("/")) {
-    return `/images/products/${id}/${firstImage}`;
-  }
-  return firstImage;
-}
-
-const mainImage = resolveProductImage(product.image, product.id);
-
 // Çoklu görseller (Detay Sayfası Slayt Gösterisi İçin)
 function getProductImagesList(imageField, productId) {
-  // 1. Eğer Firebase'den bir görsel tanımı (tekil veya virgülle ayrılmış liste) gelmişse, onu işle (Öncelikli)
-  if (imageField && imageField.trim() !== "") {
-    let images = [];
-    if (imageField.includes(',')) {
-      images = imageField.split(',').map((img: string) => img.trim());
-    } else {
-      images = [imageField.trim()];
+  const localImages = [];
+  const publicImagesDir = path.join(process.cwd(), 'public', 'images');
+  
+  // 1. Ana görsel: [id].webp var mı?
+  if (fs.existsSync(path.join(publicImagesDir, `${productId}.webp`))) {
+    localImages.push(`/images/${productId}.webp`);
+  }
+  
+  // 2. Çoklu görseller: [id]_[1..10].webp var mı?
+  for (let i = 1; i <= 10; i++) {
+    const name = `${productId}_${i}.webp`;
+    if (fs.existsSync(path.join(publicImagesDir, name))) {
+      localImages.push(`/images/${name}`);
     }
-    return images.map((img: string) => {
+  }
+
+  // 3. Alternatif çoklu görseller: [id]-[1..10].webp var mı?
+  for (let i = 1; i <= 10; i++) {
+    const name = `${productId}-${i}.webp`;
+    if (fs.existsSync(path.join(publicImagesDir, name)) && !localImages.includes(`/images/${name}`)) {
+      localImages.push(`/images/${name}`);
+    }
+  }
+
+  // 4. Firebase'den gelen harici görsel tanımları (virgülle ayrılmış liste veya tekil URL)
+  const externalImages = [];
+  if (imageField && imageField.trim() !== "") {
+    let rawImages = [];
+    if (imageField.includes(',')) {
+      rawImages = imageField.split(',').map((img: string) => img.trim());
+    } else {
+      rawImages = [imageField.trim()];
+    }
+
+    rawImages.forEach((img: string) => {
+      let resolved = img;
       if (!img.includes('/')) {
-        // public/images altında direkt bu isimde dosya var mı?
-        try {
-          const directPath = path.join(process.cwd(), 'public', 'images', img);
-          if (fs.existsSync(directPath)) {
-            return `/images/${img}`;
-          }
-        } catch (e) {
-          // ignore
+        if (fs.existsSync(path.join(publicImagesDir, img))) {
+          resolved = `/images/${img}`;
+        } else {
+          resolved = `/images/products/${productId}/${img}`;
         }
-        // Fallback klasik klasör
-        return `/images/products/${productId}/${img}`;
       }
-      return img;
+      if (!localImages.includes(resolved) && !externalImages.includes(resolved)) {
+        externalImages.push(resolved);
+      }
     });
   }
 
-  // 2. Eğer Firebase'de hiç görsel alanı yoksa veya boşsa; ID.webp kontrolü yap:
-  try {
-    const idPath = path.join(process.cwd(), 'public', 'images', `${productId}.webp`);
-    if (fs.existsSync(idPath)) {
-      return [`/images/${productId}.webp`];
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  // 3. O da yoksa stok_logo.webp kullan:
-  try {
-    const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'stok_logo.webp');
-    if (fs.existsSync(defaultLogoPath)) {
+  const allImages = [...localImages, ...externalImages];
+  if (allImages.length === 0) {
+    if (fs.existsSync(path.join(publicImagesDir, 'stok_logo.webp'))) {
       return ['/images/stok_logo.webp'];
     }
-  } catch (e) {
-    // ignore
+    return [`/images/products/${productId}/cover.webp`];
   }
 
-  // 4. Son çare klasik kapak resmi fallback
-  return [`/images/products/${productId}/cover.webp`];
+  return allImages;
 }
 
-const imagesList = getProductImagesList(product.image, product.id);
+const localImagesList = getProductImagesList("", product.id);
+const imagesList = getProductImagesList(product.image || product.gorsel, product.id);
+const mainImage = imagesList[0] || `/images/stok_logo.webp`;
 
 // Çoklu videolar
 function getProductVideosList(videoField) {
@@ -1369,7 +1329,7 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
       <section class="hero-grid">
         
         <!-- Sol: Görsel slideshow -->
-        <div class="detail-media-card" data-build-images={JSON.stringify(imagesList)}>
+        <div class="detail-media-card" data-local-images={JSON.stringify(localImagesList)} data-build-images={JSON.stringify(imagesList)}>
           <div class="slideshow-wrapper">
             {imagesList.map((img, index) => (
               <img 
@@ -1430,7 +1390,7 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
           <!-- Özellikler Listesi -->
           <div class="detail-features-title">✨ Özel Formülünün Öne Çıkan Faydaları</div>
           <ul class="detail-features-list">
-            {product.features.split('\n').filter(Boolean).map((feature) => (
+            {(product.features || product.detay || "").split('\n').filter(Boolean).map((feature) => (
               <li>
                 <span class="bullet">✦</span>
                 <span>{feature.replace(/^[✓\s*-]+/, '')}</span>
@@ -1915,10 +1875,28 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
           const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
           const originalPrice = hasCampaign ? salePriceNum : null;
 
-          // Görselleri derleme zamanında tespit edilen (data-build-images) özelliğinden al
+          // Yerel görselleri data-local-images özelliğinden al
           const mediaCard = document.querySelector('.detail-media-card');
-          const buildImagesAttr = mediaCard ? mediaCard.getAttribute('data-build-images') : null;
-          const imagesList = buildImagesAttr ? JSON.parse(buildImagesAttr) : [`/images/${product.id}.webp`];
+          const localImagesAttr = mediaCard ? mediaCard.getAttribute('data-local-images') : null;
+          const localImages = localImagesAttr ? JSON.parse(localImagesAttr) : [`/images/${product.id || productId}.webp`];
+
+          // Firebase'deki görsel alanını çöz ve yerel listeye ekle
+          const imageField = product.image || product.gorsel;
+          const externalImages = [];
+          if (imageField && imageField.trim() !== "") {
+            let rawImages = imageField.includes(',') ? imageField.split(',').map(img => img.trim()) : [imageField.trim()];
+            rawImages.forEach(img => {
+              let resolved = img;
+              if (!img.includes('/')) {
+                resolved = `/images/${img}`;
+              }
+              if (!localImages.includes(resolved) && !externalImages.includes(resolved)) {
+                externalImages.push(resolved);
+              }
+            });
+          }
+
+          const imagesList = [...localImages, ...externalImages];
           const resolvedImg = imagesList[0] || `/images/stok_logo.webp`;
 
           // 1. Ürün Adını Güncelle
@@ -1932,8 +1910,9 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
 
           // 3. Özellikler Listesini Güncelle
           const featuresList = document.querySelector('.detail-features-list');
-          if (featuresList && product.features) {
-            const features = product.features.split('\n').filter(Boolean);
+          const productFeatures = product.features || product.detay;
+          if (featuresList && productFeatures) {
+            const features = productFeatures.split('\n').filter(Boolean);
             const featuresHtml = features.map(feature => `
               <li>
                 <span class="bullet">✦</span>

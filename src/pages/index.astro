@@ -980,7 +980,7 @@ function getInstagramDmUrl(productName, customLink) {
             </div>
           ) : (
             products.map((product, index) => {
-              const resolvedImg = resolveProductImage(product.image, product.id);
+              const resolvedImg = resolveProductImage(product.image || product.gorsel, product.id);
               
               const campaignPriceNum = parseFloat(product.campaignPrice);
               const salePriceNum = parseFloat(product.salePrice) || 0;
@@ -1332,7 +1332,15 @@ function getInstagramDmUrl(productName, customLink) {
             resolvedImg = card.getAttribute('data-image') || `/images/stok_logo.webp`;
           } else {
             // Eğer tamamen yeni eklenen bir ürünse, varsayılan olarak ID.webp veya stok_logo'ya yönlendir
-            resolvedImg = `/images/${product.id}.webp`;
+            const imageField = product.image || product.gorsel;
+            if (imageField && imageField.trim() !== "") {
+              resolvedImg = imageField.includes(',') ? imageField.split(',')[0].trim() : imageField.trim();
+              if (!resolvedImg.includes('/')) {
+                resolvedImg = `/images/${resolvedImg}`;
+              }
+            } else {
+              resolvedImg = `/images/${product.id}.webp`;
+            }
           }
 
           if (card) {
