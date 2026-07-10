@@ -1297,15 +1297,19 @@ function getInstagramDmUrl(productName, customLink) {
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
 
-      // İstemci tarafı akıllı görsel çözücü
+      // İstemci tarafı akıllı görsel çözücü (Çoklu resim tanımlarında ilk resmi kapak resmi yapar)
       function resolveProductImageClient(image, id) {
-        if (image && !image.includes("/")) {
-          return `/images/${image}`;
+        let firstImage = image;
+        if (image && image.includes(',')) {
+          firstImage = image.split(',')[0].trim();
         }
-        if (!image) {
+        if (firstImage && !firstImage.includes("/")) {
+          return `/images/${firstImage}`;
+        }
+        if (!firstImage) {
           return `/images/stok_logo.webp`;
         }
-        return image;
+        return firstImage;
       }
 
       // Firebase /products düğümünü canlı (real-time) olarak dinle

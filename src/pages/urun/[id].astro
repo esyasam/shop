@@ -39,9 +39,27 @@ const hasCampaign = !isNaN(campaignPriceNum) && campaignPriceNum > 0 && campaign
 const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
 const originalPrice = hasCampaign ? salePriceNum : null;
 
-// Görsel çözme
+// Görsel çözme (Kapak Resmi İçin)
 function resolveProductImage(image, id) {
-  // 1. Ürün ID'si ile eşleşen bir görselin direkt public/images altında olup olmadığını kontrol et (ör. 50200.webp)
+  // Eğer çoklu görsel varsa, ilk görseli kapak resmi yap
+  let firstImage = image;
+  if (image && image.includes(',')) {
+    firstImage = image.split(',')[0].trim();
+  }
+
+  // 1. Belirtilen görsel adının direkt public/images altında olup olmadığını kontrol et (Öncelikli)
+  if (firstImage && !firstImage.includes("/")) {
+    try {
+      const directPath = path.join(process.cwd(), 'public', 'images', firstImage);
+      if (fs.existsSync(directPath)) {
+        return `/images/${firstImage}`;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // 2. Ürün ID'si ile eşleşen bir görselin direkt public/images altında olup olmadığını kontrol et (ör. 50200.webp)
   try {
     const idPath = path.join(process.cwd(), 'public', 'images', `${id}.webp`);
     if (fs.existsSync(idPath)) {
@@ -49,18 +67,6 @@ function resolveProductImage(image, id) {
     }
   } catch (e) {
     // ignore
-  }
-
-  // 2. Belirtilen görsel adının direkt public/images altında olup olmadığını kontrol et
-  if (image && !image.includes("/")) {
-    try {
-      const directPath = path.join(process.cwd(), 'public', 'images', image);
-      if (fs.existsSync(directPath)) {
-        return `/images/${image}`;
-      }
-    } catch (e) {
-      // ignore
-    }
   }
 
   // 3. Resmi bulunmayan ürünler için stok_logo.webp kontrolü ve fallback kullanımı
@@ -74,20 +80,46 @@ function resolveProductImage(image, id) {
   }
 
   // 4. Klasik/eski eşleme mantığı (fallback)
-  if (!image) {
+  if (!firstImage) {
     return `/images/products/${id}/cover.webp`;
   }
-  if (!image.includes("/")) {
-    return `/images/products/${id}/${image}`;
+  if (!firstImage.includes("/")) {
+    return `/images/products/${id}/${firstImage}`;
   }
-  return image;
+  return firstImage;
 }
 
 const mainImage = resolveProductImage(product.image, product.id);
 
-// Çoklu görseller
+// Çoklu görseller (Detay Sayfası Slayt Gösterisi İçin)
 function getProductImagesList(imageField, productId) {
-  // 1. Ürün ID'si ile eşleşen bir görselin direkt public/images altında olup olmadığını kontrol et
+  // 1. Eğer Firebase'den bir görsel tanımı (tekil veya virgülle ayrılmış liste) gelmişse, onu işle (Öncelikli)
+  if (imageField && imageField.trim() !== "") {
+    let images = [];
+    if (imageField.includes(',')) {
+      images = imageField.split(',').map((img: string) => img.trim());
+    } else {
+      images = [imageField.trim()];
+    }
+    return images.map((img: string) => {
+      if (!img.includes('/')) {
+        // public/images altında direkt bu isimde dosya var mı?
+        try {
+          const directPath = path.join(process.cwd(), 'public', 'images', img);
+          if (fs.existsSync(directPath)) {
+            return `/images/${img}`;
+          }
+        } catch (e) {
+          // ignore
+        }
+        // Fallback klasik klasör
+        return `/images/products/${productId}/${img}`;
+      }
+      return img;
+    });
+  }
+
+  // 2. Eğer Firebase'de hiç görsel alanı yoksa veya boşsa; ID.webp kontrolü yap:
   try {
     const idPath = path.join(process.cwd(), 'public', 'images', `${productId}.webp`);
     if (fs.existsSync(idPath)) {
@@ -97,7 +129,7 @@ function getProductImagesList(imageField, productId) {
     // ignore
   }
 
-  // 1.5 Resmi bulunmayan ürünler için stok_logo.webp kontrolü ve fallback kullanımı
+  // 3. O da yoksa stok_logo.webp kullan:
   try {
     const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'stok_logo.webp');
     if (fs.existsSync(defaultLogoPath)) {
@@ -107,30 +139,8 @@ function getProductImagesList(imageField, productId) {
     // ignore
   }
 
-  // 2. Orijinal bölünmüş/haritalanmış mantık
-  if (!imageField) {
-    return [`/images/products/${productId}/cover.webp`];
-  }
-  let images = [];
-  if (imageField.includes(',')) {
-    images = imageField.split(',').map((img: string) => img.trim());
-  } else {
-    images = [imageField.trim()];
-  }
-  return images.map((img: string) => {
-    if (!img.includes('/')) {
-      try {
-        const directPath = path.join(process.cwd(), 'public', 'images', img);
-        if (fs.existsSync(directPath)) {
-          return `/images/${img}`;
-        }
-      } catch (e) {
-        // ignore
-      }
-      return `/images/products/${productId}/${img}`;
-    }
-    return img;
-  });
+  // 4. Son çare klasik kapak resmi fallback
+  return [`/images/products/${productId}/cover.webp`];
 }
 
 const imagesList = getProductImagesList(product.image, product.id);
@@ -1601,11 +1611,11 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
       // DETAIL PAGE SLIDESHOW RUNTIME LOGIC
       // ==========================================
       let currentSlideIndex = 0;
-      const slides = document.querySelectorAll('.slide-img');
-      const dots = document.querySelectorAll('.dot');
-      const thumbs = document.querySelectorAll('.thumb-btn');
 
       function showSlide(index) {
+        const slides = document.querySelectorAll('.slide-img');
+        const dots = document.querySelectorAll('.dot');
+        const thumbs = document.querySelectorAll('.thumb-btn');
         if (slides.length === 0) return;
 
         if (index >= slides.length) { currentSlideIndex = 0; }
@@ -1620,6 +1630,10 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         if (dots[currentSlideIndex]) dots[currentSlideIndex].classList.add('active');
         if (thumbs[currentSlideIndex]) thumbs[currentSlideIndex].classList.add('active');
       }
+
+      // Modül scriptlerimizin de slideshow'u kontrol edebilmesi için pencere kapsamına ekle
+      window.showSlide = showSlide;
+      window.currentSlideIndex = currentSlideIndex;
 
       // ==========================================
       // PRODUCT DETAIL ACTION GENERATORS
@@ -1797,15 +1811,130 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
 
-      // İstemci tarafı akıllı görsel çözücü
+      // İstemci tarafı akıllı görsel çözücü (Kapak Resmi)
       function resolveProductImageClient(image, id) {
-        if (image && !image.includes("/")) {
-          return `/images/${image}`;
+        let firstImage = image;
+        if (image && image.includes(',')) {
+          firstImage = image.split(',')[0].trim();
         }
-        if (!image) {
+        if (firstImage && !firstImage.includes("/")) {
+          return `/images/${firstImage}`;
+        }
+        if (!firstImage) {
           return `/images/stok_logo.webp`;
         }
-        return image;
+        return firstImage;
+      }
+
+      // İstemci tarafı çoklu görsel listesi çözücü
+      function getProductImagesListClient(imageField, productId) {
+        if (imageField && imageField.trim() !== "") {
+          let images = [];
+          if (imageField.includes(',')) {
+            images = imageField.split(',').map(img => img.trim());
+          } else {
+            images = [imageField.trim()];
+          }
+          return images.map(img => {
+            if (!img.includes('/')) {
+              return `/images/${img}`;
+            }
+            return img;
+          });
+        }
+        // Eğer Firebase görseli boşsa, ID.webp veya stok_logo'ya dön
+        return [`/images/${productId}.webp`];
+      }
+
+      // Slayt kontrollerini dinamik olarak yeniden bağla (Rebind Events)
+      function rebindSlideshowControls() {
+        const prevBtn = document.getElementById('prev-slide-btn');
+        const nextBtn = document.getElementById('next-slide-btn');
+        
+        if (prevBtn) {
+          prevBtn.addEventListener('click', () => {
+            if (window.showSlide && window.currentSlideIndex !== undefined) {
+              window.showSlide(window.currentSlideIndex - 1);
+            }
+          });
+        }
+        if (nextBtn) {
+          nextBtn.addEventListener('click', () => {
+            if (window.showSlide && window.currentSlideIndex !== undefined) {
+              window.showSlide(window.currentSlideIndex + 1);
+            }
+          });
+        }
+
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach(dot => {
+          dot.addEventListener('click', () => {
+            const idx = parseInt(dot.getAttribute('data-index'));
+            if (window.showSlide) window.showSlide(idx);
+          });
+        });
+
+        const thumbs = document.querySelectorAll('.thumb-btn');
+        thumbs.forEach(thumb => {
+          thumb.addEventListener('click', () => {
+            const idx = parseInt(thumb.getAttribute('data-index'));
+            if (window.showSlide) window.showSlide(idx);
+          });
+        });
+      }
+
+      // Detay sayfası slayt gösterisini dinamik olarak yeniden oluştur (DOM Injection)
+      function updateDetailPageSlideshow(imagesList, productName) {
+        const mediaCard = document.querySelector('.detail-media-card');
+        if (!mediaCard) return;
+
+        // Yüklenme sırasında stok_logo.webp veya ID.webp kontrolü yaparak kırık görseli engelle:
+        const checkedImagesList = imagesList.map(img => {
+          // Eğer görsel /images/stok_logo.webp değilse ve ID.webp de değilse, ama tarayıcıda yüklenemezse 
+          // onerror handler'ı ile stok_logo.webp'ye otomatik düşecektir.
+          return img;
+        });
+
+        let slideshowHtml = `
+          <div class="slideshow-wrapper">
+            ${checkedImagesList.map((img, index) => `
+              <img 
+                src="${img}" 
+                alt="${productName} Görsel ${index + 1}" 
+                class="slide-img ${index === 0 ? 'active' : ''}" 
+                data-index="${index}"
+                loading="${index === 0 ? 'eager' : 'lazy'}"
+                onerror="this.onerror=null; this.src='/images/stok_logo.webp';"
+              />
+            `).join('')}
+            
+            ${checkedImagesList.length > 1 ? `
+              <button class="slide-btn slide-prev" id="prev-slide-btn">❮</button>
+              <button class="slide-btn slide-next" id="next-slide-btn">❯</button>
+              <div class="slide-dots">
+                ${checkedImagesList.map((_, index) => `
+                  <span class="dot ${index === 0 ? 'active' : ''}" data-index="${index}"></span>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+
+          ${checkedImagesList.length > 1 ? `
+            <div class="slides-thumbnails">
+              ${checkedImagesList.map((img, index) => `
+                <button class="thumb-btn ${index === 0 ? 'active' : ''}" data-index="${index}">
+                  <img src="${img}" alt="Küçük Görsel" onerror="this.onerror=null; this.src='/images/stok_logo.webp';" />
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+        `;
+
+        if (mediaCard.innerHTML !== slideshowHtml) {
+          mediaCard.innerHTML = slideshowHtml;
+          rebindSlideshowControls();
+          if (window.showSlide) window.showSlide(0); // Slaytı ilk elemandan başlat
+        }
       }
 
       // Tarayıcı adres çubuğundan ürün ID'sini tespit et (Son derece güvenli ve standart yöntem)
@@ -1835,7 +1964,11 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
             titleEl.textContent = product.name;
           }
 
-          // 2. Özellikler Listesini Güncelle
+          // 2. Çoklu Görselleri/Slayt Gösterisini Canlı Güncelle
+          const imagesList = getProductImagesListClient(product.image, product.id);
+          updateDetailPageSlideshow(imagesList, product.name);
+
+          // 3. Özellikler Listesini Güncelle
           const featuresList = document.querySelector('.detail-features-list');
           if (featuresList && product.features) {
             const features = product.features.split('\n').filter(Boolean);
@@ -1851,7 +1984,7 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
             }
           }
 
-          // 3. Fiyat Bölümünü Güncelle
+          // 4. Fiyat Bölümünü Güncelle
           const priceRow = document.querySelector('.price-row');
           if (priceRow) {
             let newPriceHtml = '';
@@ -1865,7 +1998,7 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
             }
           }
 
-          // 4. Detay Sayfası Buton ve Sarmalayıcı Özniteliklerini Güncelle (Sepet işlemleri için hayati!)
+          // 5. Detay Sayfası Buton ve Sarmalayıcı Özniteliklerini Güncelle (Sepet işlemleri için hayati!)
           const detailWrapper = document.querySelector('.detail-action-wrapper');
           if (detailWrapper) {
             detailWrapper.setAttribute('data-name', product.name);
@@ -1894,7 +2027,7 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
             checkoutBtn.setAttribute('data-image', resolvedImg);
           }
 
-          // 5. Sepette Ekle/Adet Buton Durumunu Senkronize Et
+          // 6. Sepette Ekle/Adet Buton Durumunu Senkronize Et
           if (window.cart && typeof updateDetailPageButton === 'function') {
             updateDetailPageButton(window.cart);
           }
