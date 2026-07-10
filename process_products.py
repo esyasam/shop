@@ -25,23 +25,59 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from rembg import remove
+    from rembg import remove, new_session
 except ImportError:
     print("\n[UYARI] 'rembg' (Arka Plan Silme) kütüphanesi kurulu değil.")
     print("Bu kütüphane ilk çalışmada yapay zeka modelini otomatik indirir ve arka planları siler.")
     print("Yüklemek için: pip install rembg")
     print("Eğer şimdi yüklemek istemiyorsanız, sadece boyutlandırma ve yansıma işlemleri yapılacaktır.")
 
+# Küresel yapay zeka modeli oturum önbelleği (Performans ve hız için)
+REMBG_SESSION = None
+
 # --- YAPILANDIRMA VE KALİBRASYON AYARLARI ---
-PRODUCT_MAX_HEIGHT = 660  # Ürünün şablondaki maksimum dikey yüksekliği (px) (%10 büyütüldü, eski değer: 600)
-PRODUCT_MAX_WIDTH = 800   # Ürünün şablondaki maksimum yatay genişliği (px) (%10 büyütüldü, eski değer: 725)
+PRODUCT_MAX_HEIGHT = 800  # Ürünün şablondaki maksimum dikey yüksekliği (1200px içinde daha dolgun durması için büyütüldü)
+PRODUCT_MAX_WIDTH = 950   # Ürünün şablondaki maksimum yatay genişliği (1200px içinde daha dolgun durması için büyütüldü)
 REFLECTION_OPACITY = 0.28  # Cam zemindeki yansımanın başlangıç şeffaflığı (0.0 - 1.0)
 REFLECTION_BLUR = 5        # Yansımanın fluluk derecesi (Blur yarıçapı, yumuşak flu yansıma için)
-SHADOW_OPACITY = 0.05      # Ürün altındaki gölgenin şeffaflığı (0.0 - 1.0) (Çok çok az gölge istendiği için eski 0.35 değeri düşürüldü)
+SHADOW_OPACITY = 0.05      # Ürün altındaki gölgenin şeffaflığı (0.0 - 1.0)
 SHADOW_BLUR = 12           # Gölgelerin yumuşaklık derecesi (Blur yarıçapı)
 BACKGROUND_BLUR = 0        # Arka planın fluluk derecesi (Bokeh efekti, oluşturulan gradient için 0 kalsın)
 BACKGROUND_SATURATION = 1.0  # Arka plan doygunluğu (Yaratılan gradyan için 1.0)
 BACKGROUND_BRIGHTNESS = 1.0  # Arka plan parlaklığı (Yaratılan gradyan için 1.0)
+
+# --- ARKA DUVAR FLİGRAN AYARLARI ---
+BACKGROUND_TEXT = "Es Yaşam"       # Arka duvara yazılacak marka ismi (Sanatsal ve zarif)
+BACKGROUND_TEXT_SIZE = 120         # Yazı font boyutu
+BACKGROUND_TEXT_Y = 120            # Yazının dikey konumu (Ortada, üst kenara yakın yer)
+# Es Yaşam krem arka plana sahip olduğu için koyu bir renk yerine çok hafif, soft ve şık toprak/warm-grey tonlu yarı şeffaf bir yazı kullanalım:
+BACKGROUND_TEXT_COLOR = (120, 110, 100, 45) # Yarı şeffaf, krem zeminle mükemmel bütünleşen sanatsal bej/toprak tonu (gözü yormaz)
+
+# --- KENAR KESKİNLEŞTİRME VE NETLEŞTİRME AYARLARI ---
+EDGE_SHAVE = True            # True ise ürün kenarlarını 1-2 piksel içeriye tıraşlayarak eski arka plan renk sızıntılarını (halo) siler
+EDGE_SMOOTHING = True        # True ise kesim kenarlarını hafifçe yumuşatarak pikselleşmeyi (tırtıklanmayı) önler ve jilet gibi pürüzsüz yapar
+REMBG_MODEL_NAME = "isnet-general-use"  # "u2net" (standart) veya "isnet-general-use" (ürünler için ekstra keskin sınır çizen yüksek kaliteli model)
+
+def get_font(font_size):
+    """Sistemdeki zarif ve sanatsal serif italic fontları arar ve yükler, bulamazsa varsayılanı yükler."""
+    font_paths = [
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSerif-Italic.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSerifDisplay-Italic.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSerifItalic.ttf",
+        "arial.ttf"
+    ]
+    for fp in font_paths:
+        if os.path.exists(fp):
+            try:
+                return ImageFont.truetype(fp, font_size)
+            except Exception:
+                pass
+    try:
+        return ImageFont.load_default()
+    except Exception:
+        return None
 
 def create_gradient_mask(width, height, start_opacity):
     """Yansımanın aşağı doğru pürüzsüzce sönümlenmesi için linear gradient maske üretir."""
@@ -59,7 +95,7 @@ def create_contact_shadow(width, blur_radius, opacity):
         shadow_height = 6
         
     shadow_canvas = Image.new('RGBA', (width + blur_radius * 3, shadow_height + blur_radius * 3), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(shadow_canvas)
+    shadow_canvas_draw = ImageDraw.Draw(shadow_canvas)
     
     # Elips koordinatları
     left = blur_radius * 1.5
@@ -67,7 +103,7 @@ def create_contact_shadow(width, blur_radius, opacity):
     right = left + width
     bottom = top + shadow_height
     
-    draw.ellipse([left, top, right, bottom], fill=(0, 0, 0, int(255 * opacity)))
+    shadow_canvas_draw.ellipse([left, top, right, bottom], fill=(0, 0, 0, int(255 * opacity)))
     return shadow_canvas.filter(ImageFilter.GaussianBlur(blur_radius))
 
 def create_cream_background():
@@ -80,59 +116,28 @@ def create_cream_background():
         g = int(250 * (1.0 - ratio) + 238 * ratio)
         b = int(244 * (1.0 - ratio) + 224 * ratio)
         small_bg.putpixel((0, y), (r, g, b, 255))
-    return small_bg.resize((1200, 1200), Image.Resampling.BILINEAR)
-
-def add_watermark(image, text="Es Yaşam"):
-    """Görsele zarif, yarı şeffaf ve warm-grey tonlarında 'Es Yaşam' filigranı ekler."""
-    txt_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(txt_layer)
+    scene = small_bg.resize((1200, 1200), Image.Resampling.BILINEAR)
     
-    # Premium font yollarını dene
-    font = None
-    font_paths = [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
-        "Arial.ttf"
-    ]
-    for fp in font_paths:
-        if os.path.exists(fp):
+    # Arka duvara sanatsal ve zarif "Es Yaşam" yazısını ekle (Filigranı duvara taşımış oluyoruz)
+    if 'BACKGROUND_TEXT' in globals() and BACKGROUND_TEXT:
+        draw = ImageDraw.Draw(scene)
+        text_font = get_font(BACKGROUND_TEXT_SIZE)
+        if text_font:
             try:
-                font = ImageFont.truetype(fp, 30)
-                break
-            except Exception:
-                pass
+                bbox = draw.textbbox((0, 0), BACKGROUND_TEXT, font=text_font)
+                text_w = bbox[2] - bbox[0]
+                text_h = bbox[3] - bbox[1]
+            except AttributeError:
+                try:
+                    text_w, text_h = text_font.getsize(BACKGROUND_TEXT)
+                except Exception:
+                    text_w, text_h = 150, 40
                 
-    if font is None:
-        try:
-            font = ImageFont.load_default()
-        except Exception:
-            font = None
+            text_x = (1200 - text_w) // 2
+            text_y = BACKGROUND_TEXT_Y
+            draw.text((text_x, text_y), BACKGROUND_TEXT, fill=BACKGROUND_TEXT_COLOR, font=text_font)
             
-    # Konum hesaplama (Sağ alt köşe, 45px pay ile)
-    width, height = image.size
-    margin = 45
-    
-    if font:
-        try:
-            # Pillow 10+ için modern text bbox tespiti
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_w = bbox[2] - bbox[0]
-            text_h = bbox[3] - bbox[1]
-        except AttributeError:
-            # Eski Pillow sürümleri için fallback
-            text_w, text_h = draw.textsize(text, font=font)
-            
-        x = width - text_w - margin
-        y = height - text_h - margin
-        
-        # Açık krem arka plana uyumlu soft toprak tonlu yarı şeffaf koyu gri
-        color = (90, 85, 80, 85)
-        
-        # Metni çiz
-        draw.text((x, y), text, fill=color, font=font)
-        
-    return Image.alpha_composite(image, txt_layer)
+    return scene
 
 def process_single_image(img_path, output_path, template_img):
     """Tek bir ürün görselini işler, stüdyoya monte eder ve kaydeder."""
@@ -143,9 +148,22 @@ def process_single_image(img_path, output_path, template_img):
         raw_img = Image.open(img_path)
         
         # 2. Arka Planı Temizle (rembg kurulu ise)
+        global REMBG_SESSION
         if 'remove' in globals():
+            # Oturumu ilk kez çalışırken model ayarına göre başlat
+            if REMBG_SESSION is None and 'new_session' in globals():
+                try:
+                    print(f"   ↳ '{REMBG_MODEL_NAME}' yapay zeka modeli yükleniyor (İlk resimde model indirme veya yüklenme süresi gerekebilir)...")
+                    REMBG_SESSION = new_session(REMBG_MODEL_NAME)
+                except Exception as e:
+                    print(f"   ⚠️ Model oturumu başlatılamadı, varsayılan model kullanılacak: {str(e)}")
+                    REMBG_SESSION = False
+            
             print("   ↳ Yapay zeka ile arka plan temizleniyor...")
-            no_bg_img = remove(raw_img)
+            if REMBG_SESSION:
+                no_bg_img = remove(raw_img, session=REMBG_SESSION)
+            else:
+                no_bg_img = remove(raw_img)
         else:
             print("   ↳ [PAS GEÇİLDİ] rembg kurulu olmadığı için arka plan silinmedi (PNG ise şeffaflık korunur).")
             no_bg_img = raw_img.convert("RGBA")
@@ -154,6 +172,16 @@ def process_single_image(img_path, output_path, template_img):
         if no_bg_img.mode == 'RGBA':
             r, g, b, a = no_bg_img.split()
             a = a.point(lambda p: 0 if p < 15 else p)
+            
+            # --- KENAR NETLEŞTİRME VE TEMİZLEME TEKNİKLERİ ---
+            # 1. Kenar Tıraşlama (MinFilter): Kenarlardan içeriye doğru 1 piksel kırparak eski zemin renginin sızmasını (halo/fringe) önler.
+            if 'EDGE_SHAVE' in globals() and EDGE_SHAVE:
+                a = a.filter(ImageFilter.MinFilter(3)) # 3x3 MinFilter, maskenin kenar sınırlarını tam 1px daraltır
+                
+            # 2. Kenar Yumuşatma (GaussianBlur): Kesimin pürüzsüzleşmesini, pikselleşmenin (anti-aliasing) giderilmesini sağlar.
+            if 'EDGE_SMOOTHING' in globals() and EDGE_SMOOTHING:
+                a = a.filter(ImageFilter.GaussianBlur(0.8)) # Hafif yumuşatarak geçişi pürüzsüzleştirir
+                
             no_bg_img = Image.merge('RGBA', (r, g, b, a))
 
         bbox = no_bg_img.getbbox()
@@ -210,9 +238,8 @@ def process_single_image(img_path, output_path, template_img):
         print("   ↳ Ürün sahneye yerleştiriliyor...")
         scene.paste(product_resized, (product_x, product_y), product_resized)
         
-        # 7.5 ZARİF ES YAŞAM FİLİGRANI EKLE
-        print("   ↳ 'Es Yaşam' filigranı ekleniyor...")
-        scene = add_watermark(scene, "Es Yaşam")
+        # 7.5 ZARİF ES YAŞAM FİLİGRANI EKLE (İptal edildi - Arka duvara taşındı)
+        # print("   ↳ 'Es Yaşam' filigranı ekleniyor...")
         
         # 8. WebP OLARAK KAYDET
         scene_rgb = scene.convert("RGB")
@@ -227,15 +254,19 @@ def process_single_image(img_path, output_path, template_img):
 def main():
     parser = argparse.ArgumentParser(description="ES YAŞAM Ürün Fotoğrafı Stüdyolaştırma Otomasyonu")
     parser.add_argument("--input", default="product_images", help="Giriş görsellerinin bulunduğu klasör")
-    parser.add_argument("--output", default="processed_products", help="İşlenmiş görsellerin kaydedileceği klasör")
+    parser.add_argument("--output", default=None, help="İşlenmiş görsellerin kaydedileceği klasör (Varsayılan: Giriş klasörünün içindeki 'islenmis_urunler')")
     args = parser.parse_args()
     
-    # Klasörleri kontrol et ve oluştur
+    # Giriş klasörünü kontrol et ve oluştur
     if not os.path.exists(args.input):
         os.makedirs(args.input)
         print(f"\n[BİLGİ] '{args.input}' klasörü oluşturuldu. Lütfen ham ürün resimlerinizi bu klasöre atın.")
         print("Ardından bu scripti tekrar çalıştırın.")
         sys.exit(0)
+        
+    # Eğer çıktı klasörü belirtilmemişse, giriş klasörünün içerisine 'islenmis_urunler' klasörü olarak ayarla
+    if args.output is None:
+        args.output = os.path.join(args.input, "islenmis_urunler")
         
     if not os.path.exists(args.output):
         os.makedirs(args.output)
@@ -245,7 +276,17 @@ def main():
         
     # Desteklenen uzantılar
     valid_extensions = ('.jpg', '.jpeg', '.png', '.webp')
-    image_files = [f for os_dir, _, files in os.walk(args.input) for f in files if f.lower().endswith(valid_extensions)]
+    image_files = []
+    
+    # Sadece giriş klasörünün en üst seviyesindeki dosyaları listele (alt klasörleri dahil etme)
+    try:
+        for f in os.listdir(args.input):
+            file_path = os.path.join(args.input, f)
+            if os.path.isfile(file_path) and f.lower().endswith(valid_extensions):
+                image_files.append(f)
+    except Exception as e:
+        print(f"[HATA] Giriş klasörü taranırken hata oluştu: {str(e)}")
+        sys.exit(1)
     
     if not image_files:
         print(f"\n[BİLGİ] '{args.input}' klasöründe işlenecek görsel bulunamadı.")

@@ -1782,5 +1782,125 @@ const deepDive = getProductDeepDiveContent(product.name, product.id);
         }
       });
     </script>
+
+    <!-- REAL-TIME FIREBASE HYBRID SYNC SCRIPT (YÖNTEM 1) -->
+    <script is:inline type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+      // ES Yaşam Firebase Realtime Database Yapılandırması
+      const firebaseConfig = {
+        databaseURL: "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "esyasam77"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      // İstemci tarafı akıllı görsel çözücü
+      function resolveProductImageClient(image, id) {
+        if (image && !image.includes("/")) {
+          return `/images/${image}`;
+        }
+        if (!image) {
+          return `/images/stok_logo.webp`;
+        }
+        return image;
+      }
+
+      // Tarayıcı adres çubuğundan ürün ID'sini tespit et (Son derece güvenli ve standart yöntem)
+      const pathParts = window.location.pathname.split('/');
+      let productId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+      if (productId) {
+        productId = productId.replace('.html', '').replace('.htm', '');
+      }
+
+      if (productId) {
+        // Firebase RTDB üzerindeki bu spesifik ürünü dinle
+        onValue(ref(db, `products/${productId}`), (snapshot) => {
+          const product = snapshot.val();
+          if (!product) return;
+
+          // Fiyat ve indirim durumlarını hesapla (Astro sunucu tarafı mantığı ile birebir uyumlu)
+          const campaignPriceNum = parseFloat(product.campaignPrice);
+          const salePriceNum = parseFloat(product.salePrice) || 0;
+          const hasCampaign = !isNaN(campaignPriceNum) && campaignPriceNum > 0 && campaignPriceNum < salePriceNum;
+          const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
+          const originalPrice = hasCampaign ? salePriceNum : null;
+          const resolvedImg = resolveProductImageClient(product.image, product.id);
+
+          // 1. Ürün Adını Güncelle
+          const titleEl = document.querySelector('.detail-title');
+          if (titleEl && titleEl.textContent !== product.name) {
+            titleEl.textContent = product.name;
+          }
+
+          // 2. Özellikler Listesini Güncelle
+          const featuresList = document.querySelector('.detail-features-list');
+          if (featuresList && product.features) {
+            const features = product.features.split('\n').filter(Boolean);
+            const featuresHtml = features.map(feature => `
+              <li>
+                <span class="bullet">✦</span>
+                <span>${feature.replace(/^[✓\s*-]+/, '')}</span>
+              </li>
+            `).join('');
+
+            if (featuresList.innerHTML !== featuresHtml) {
+              featuresList.innerHTML = featuresHtml;
+            }
+          }
+
+          // 3. Fiyat Bölümünü Güncelle
+          const priceRow = document.querySelector('.price-row');
+          if (priceRow) {
+            let newPriceHtml = '';
+            if (originalPrice) {
+              newPriceHtml += `<span class="price-old-styled">${originalPrice} TL</span> `;
+            }
+            newPriceHtml += `<span class="price-sale-styled">${currentPrice} TL</span>`;
+
+            if (priceRow.innerHTML !== newPriceHtml) {
+              priceRow.innerHTML = newPriceHtml;
+            }
+          }
+
+          // 4. Detay Sayfası Buton ve Sarmalayıcı Özniteliklerini Güncelle (Sepet işlemleri için hayati!)
+          const detailWrapper = document.querySelector('.detail-action-wrapper');
+          if (detailWrapper) {
+            detailWrapper.setAttribute('data-name', product.name);
+            detailWrapper.setAttribute('data-price', currentPrice);
+            detailWrapper.setAttribute('data-image', resolvedImg);
+
+            const addCartBtn = detailWrapper.querySelector('#add-to-cart-btn');
+            if (addCartBtn) {
+              addCartBtn.setAttribute('data-name', product.name);
+              addCartBtn.setAttribute('data-price', currentPrice);
+              addCartBtn.setAttribute('data-image', resolvedImg);
+            }
+
+            const qtySelector = detailWrapper.querySelector('.detail-quantity-selector');
+            if (qtySelector) {
+              qtySelector.setAttribute('data-name', product.name);
+              qtySelector.setAttribute('data-price', currentPrice);
+              qtySelector.setAttribute('data-image', resolvedImg);
+            }
+          }
+
+          const checkoutBtn = document.getElementById('instant-checkout-btn');
+          if (checkoutBtn) {
+            checkoutBtn.setAttribute('data-name', product.name);
+            checkoutBtn.setAttribute('data-price', currentPrice);
+            checkoutBtn.setAttribute('data-image', resolvedImg);
+          }
+
+          // 5. Sepette Ekle/Adet Buton Durumunu Senkronize Et
+          if (window.cart && typeof updateDetailPageButton === 'function') {
+            updateDetailPageButton(window.cart);
+          }
+        });
+      }
+    </script>
   </body>
 </html>
+

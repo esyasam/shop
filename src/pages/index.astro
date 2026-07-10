@@ -1282,6 +1282,198 @@ function getInstagramDmUrl(productName, customLink) {
         });
       });
     </script>
+
+    <!-- REAL-TIME FIREBASE HYBRID SYNC SCRIPT (YÖNTEM 1) -->
+    <script is:inline type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+      // ES Yaşam Firebase Realtime Database Yapılandırması
+      const firebaseConfig = {
+        databaseURL: "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "esyasam77"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      // İstemci tarafı akıllı görsel çözücü
+      function resolveProductImageClient(image, id) {
+        if (image && !image.includes("/")) {
+          return `/images/${image}`;
+        }
+        if (!image) {
+          return `/images/stok_logo.webp`;
+        }
+        return image;
+      }
+
+      // Firebase /products düğümünü canlı (real-time) olarak dinle
+      onValue(ref(db, 'products'), (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const productsList = Object.values(data);
+        const grid = document.querySelector('.products-grid');
+        if (!grid) return;
+
+        // Eğer veritabanında ürün varsa ve ekranda boş vitrin uyarısı aktifse, onu temizle
+        const emptyState = grid.querySelector('.empty-state');
+        if (emptyState && productsList.length > 0) {
+          emptyState.remove();
+        }
+
+        // 1. Yeni ve güncellenen ürünleri eşleştir
+        productsList.forEach((product) => {
+          if (!product || !product.id) return;
+
+          const card = document.getElementById(`product-${product.id}`);
+          
+          // Fiyat ve indirim durumlarını hesapla (Astro sunucu tarafı mantığı ile birebir uyumlu)
+          const campaignPriceNum = parseFloat(product.campaignPrice);
+          const salePriceNum = parseFloat(product.salePrice) || 0;
+          const hasCampaign = !isNaN(campaignPriceNum) && campaignPriceNum > 0 && campaignPriceNum < salePriceNum;
+          const currentPrice = hasCampaign ? campaignPriceNum : salePriceNum;
+          const originalPrice = hasCampaign ? salePriceNum : null;
+          const resolvedImg = resolveProductImageClient(product.image, product.id);
+
+          if (card) {
+            // Ürün zaten ekranda var, bilgilerini yumuşak bir şekilde güncelle:
+            
+            // Ürün Adı güncelleme
+            const nameEl = card.querySelector('.product-name');
+            if (nameEl && nameEl.textContent !== product.name) {
+              nameEl.textContent = product.name;
+            }
+
+            // Ürün Resmi güncelleme
+            const imgEl = card.querySelector('.product-img');
+            if (imgEl && imgEl.getAttribute('src') !== resolvedImg) {
+              imgEl.setAttribute('src', resolvedImg);
+              imgEl.setAttribute('alt', product.name);
+            }
+
+            // Fiyat Kutusu güncelleme
+            const priceBox = card.querySelector('.price-box');
+            if (priceBox) {
+              let newPriceHtml = '';
+              if (originalPrice) {
+                newPriceHtml += `<span class="price-old">${originalPrice} TL</span> `;
+              }
+              newPriceHtml += `<span class="price-sale">${currentPrice} TL</span>`;
+              
+              if (priceBox.innerHTML !== newPriceHtml) {
+                priceBox.innerHTML = newPriceHtml;
+              }
+            }
+
+            // Aksiyon sarmalayıcısı ve sepet butonlarındaki data özniteliklerini güncelle (Sepete doğru fiyatla eklenmesi için çok önemli!)
+            const actionWrapper = card.querySelector('.product-action-wrapper');
+            if (actionWrapper) {
+              actionWrapper.setAttribute('data-name', product.name);
+              actionWrapper.setAttribute('data-price', currentPrice);
+              actionWrapper.setAttribute('data-image', resolvedImg);
+
+              const addBtn = actionWrapper.querySelector('.btn-add-to-cart');
+              if (addBtn) {
+                addBtn.setAttribute('data-name', product.name);
+                addBtn.setAttribute('data-price', currentPrice);
+                addBtn.setAttribute('data-image', resolvedImg);
+              }
+
+              const qtySelector = actionWrapper.querySelector('.product-quantity-selector');
+              if (qtySelector) {
+                qtySelector.setAttribute('data-name', product.name);
+                qtySelector.setAttribute('data-price', currentPrice);
+                qtySelector.setAttribute('data-image', resolvedImg);
+              }
+            }
+
+          } else {
+            // Ürün ekranda yok! Bu yeni bir ürün eklenmiş demektir.
+            // Lüks altın kart tasarım şablonunu dinamik olarak oluştur:
+            const newCard = document.createElement('div');
+            newCard.className = 'product-card';
+            newCard.id = `product-${product.id}`;
+
+            newCard.innerHTML = `
+              <a href="/urun/${product.id}" class="product-card-link">
+                <div class="badge">VİRAL ÜRÜN</div>
+                <div class="product-img-wrapper">
+                  <img 
+                    src="${resolvedImg}" 
+                    alt="${product.name}" 
+                    class="product-img" 
+                    loading="lazy"
+                  />
+                </div>
+                <div class="product-info">
+                  <h3 class="product-name">${product.name}</h3>
+                  <div class="price-box">
+                    ${originalPrice ? `<span class="price-old">${originalPrice} TL</span>` : ''}
+                    <span class="price-sale">${currentPrice} TL</span>
+                  </div>
+                </div>
+              </a>
+              <div class="product-action-wrapper" 
+                data-id="${product.id}" 
+                data-name="${product.name}" 
+                data-price="${currentPrice}" 
+                data-image="${resolvedImg}"
+              >
+                <button class="btn-order btn-add-to-cart" 
+                  data-id="${product.id}" 
+                  data-name="${product.name}" 
+                  data-price="${currentPrice}" 
+                  data-image="${resolvedImg}"
+                >
+                  <span>Sepete Ekle</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                  </svg>
+                </button>
+              </div>
+            `;
+            
+            // Giriş animasyonu için ilk değerleri tanımla
+            newCard.style.opacity = '0';
+            newCard.style.transform = 'translateY(20px)';
+            newCard.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+            
+            grid.appendChild(newCard);
+            
+            // Bir sonraki ekran çizim karesinde (frame) animasyonu başlat (premium giriş etkisi)
+            requestAnimationFrame(() => {
+              newCard.style.opacity = '1';
+              newCard.style.transform = 'translateY(0)';
+            });
+          }
+        });
+
+        // 2. Silinen ürünleri temizle
+        // Eğer DOM'da olan bir ürün kartı Firebase'den gelen güncel listede yoksa, onu ekrandan sil
+        const existingCards = grid.querySelectorAll('.product-card');
+        existingCards.forEach((card) => {
+          const cardId = card.id.replace('product-', '');
+          const existsInFirebase = productsList.some(p => p && String(p.id) === cardId);
+          if (!existsInFirebase && cardId) {
+            // Kartı yumuşak bir fade-out animasyonu ile kaldır
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-20px)';
+            setTimeout(() => card.remove(), 600);
+          }
+        });
+
+        // 3. Sepet Butonlarını Senkronize Et
+        // Ürün fiyatları veya kartları güncellendikten sonra, sepetteki adetlerin doğru yansıması için tetikle
+        if (window.cart && typeof updatePageProductButtons === 'function') {
+          updatePageProductButtons(window.cart);
+        }
+      });
+    </script>
   </body>
 </html>
+
 
