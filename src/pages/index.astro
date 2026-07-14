@@ -1,8 +1,10 @@
 ---
 // ES Yaşam - Premium Tek Sayfalık E-Ticaret Vitrini (Instagram Satış Sayfası Tasarımı)
-import fs from 'node:fs';
-import path from 'node:path';
 import CartDrawer from '../components/CartDrawer.astro';
+
+// Vite tabanlı dosya varlığı kontrolü (Cloudflare Workers/SSR uyumlu)
+const localImageFiles = import.meta.glob('/public/images/**/*.{webp,jpg,jpeg,png,gif}', { eager: true });
+const localImageKeys = Object.keys(localImageFiles).map(key => key.split('/').pop());
 
 const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
 const url = `${databaseUrl}/products.json`;
@@ -51,35 +53,21 @@ function getYoutubeEmbedUrl(url) {
  */
 function resolveProductImage(image, id) {
   // 1. Ürün ID'si ile eşleşen bir görselin direkt public/images altında olup olmadığını kontrol et (ör. 50200.webp, 50505.webp)
-  try {
-    const idPath = path.join(process.cwd(), 'public', 'images', `${id}.webp`);
-    if (fs.existsSync(idPath)) {
-      return `/images/${id}.webp`;
-    }
-  } catch (e) {
-    // ignore
+  const idImageName = `${id}.webp`;
+  if (localImageKeys.includes(idImageName)) {
+    return `/images/${idImageName}`;
   }
 
   // 2. Belirtilen görsel adının direkt public/images altında olup olmadığını kontrol et
   if (image && !image.includes("/")) {
-    try {
-      const directPath = path.join(process.cwd(), 'public', 'images', image);
-      if (fs.existsSync(directPath)) {
-        return `/images/${image}`;
-      }
-    } catch (e) {
-      // ignore
+    if (localImageKeys.includes(image)) {
+      return `/images/${image}`;
     }
   }
 
   // 3. Resmi bulunmayan ürünler için logo.jpg kontrolü ve fallback kullanımı
-  try {
-    const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'logo.jpg');
-    if (fs.existsSync(defaultLogoPath)) {
-      return '/images/logo.jpg';
-    }
-  } catch (e) {
-    // ignore
+  if (localImageKeys.includes('logo.jpg')) {
+    return '/images/logo.jpg';
   }
 
   return '/images/logo.jpg';

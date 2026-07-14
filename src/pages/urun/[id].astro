@@ -1,35 +1,30 @@
 ---
-// ES Yaşam - Bağımsız Premium Ürün Detay Sayfası
-import fs from 'node:fs';
-import path from 'node:path';
+// ES Yaşam - Bağımsız Premium Ürün Detay Sayfası (SSR Modu)
 import CartDrawer from '../../components/CartDrawer.astro';
 
-const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
-const url = `${databaseUrl}/products.json`;
-
-export async function getStaticPaths() {
-  const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
-  const url = `${databaseUrl}/products.json`;
-  try {
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
-      if (data) {
-        const products = Object.values(data);
-        return products.map((product: any) => ({
-          params: { id: String(product.id) },
-          props: { product, allProducts: products }
-        }));
-      }
-    }
-  } catch (error) {
-    console.error(" getStaticPaths hatası:", error);
-  }
-  return [];
-}
+// Vite tabanlı dosya varlığı kontrolü (Cloudflare Workers/SSR uyumlu)
+const localImageFiles = import.meta.glob('/public/images/**/*.{webp,jpg,jpeg,png,gif}', { eager: true });
+const localImageKeys = Object.keys(localImageFiles).map(key => key.split('/').pop());
 
 const { id } = Astro.params;
-const { product, allProducts } = Astro.props;
+
+const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
+const url = `${databaseUrl}/products/${id}.json`;
+
+let product = null;
+try {
+  const response = await fetch(url);
+  if (response.ok) {
+    product = await response.json();
+  }
+} catch (error) {
+  console.error("Firebase veritabanından ürün çekilirken hata oluştu:", error);
+}
+
+// Ürün bulunamadıysa ana sayfaya yönlendir
+if (!product) {
+  return Astro.redirect('/');
+}
 
 // Fiyat ayarlamaları
 const campaignPriceNum = parseFloat(product.campaignPrice);
@@ -42,17 +37,16 @@ const originalPrice = hasCampaign ? salePriceNum : null;
 // Çoklu görseller (Detay Sayfası Slayt Gösterisi İçin)
 function getProductImagesList(imageField, productId) {
   const localImages = [];
-  const publicImagesDir = path.join(process.cwd(), 'public', 'images');
   
   // 1. Ana görsel: [id].webp var mı?
-  if (fs.existsSync(path.join(publicImagesDir, `${productId}.webp`))) {
+  if (localImageKeys.includes(`${productId}.webp`)) {
     localImages.push(`/images/${productId}.webp`);
   }
   
   // 2. Çoklu görseller: [id]_[1..10].webp var mı?
   for (let i = 1; i <= 10; i++) {
     const name = `${productId}_${i}.webp`;
-    if (fs.existsSync(path.join(publicImagesDir, name))) {
+    if (localImageKeys.includes(name)) {
       localImages.push(`/images/${name}`);
     }
   }
@@ -60,7 +54,7 @@ function getProductImagesList(imageField, productId) {
   // 3. Alternatif çoklu görseller: [id]-[1..10].webp var mı?
   for (let i = 1; i <= 10; i++) {
     const name = `${productId}-${i}.webp`;
-    if (fs.existsSync(path.join(publicImagesDir, name)) && !localImages.includes(`/images/${name}`)) {
+    if (localImageKeys.includes(name) && !localImages.includes(`/images/${name}`)) {
       localImages.push(`/images/${name}`);
     }
   }
@@ -78,7 +72,7 @@ function getProductImagesList(imageField, productId) {
     rawImages.forEach((img: string) => {
       let resolved = img;
       if (!img.includes('/')) {
-        if (fs.existsSync(path.join(publicImagesDir, img))) {
+        if (localImageKeys.includes(img)) {
           resolved = `/images/${img}`;
         } else {
           resolved = `/images/products/${productId}/${img}`;
@@ -92,9 +86,6 @@ function getProductImagesList(imageField, productId) {
 
   const allImages = [...localImages, ...externalImages];
   if (allImages.length === 0) {
-    if (fs.existsSync(path.join(publicImagesDir, 'logo.jpg'))) {
-      return ['/images/logo.jpg'];
-    }
     return ['/images/logo.jpg'];
   }
 
