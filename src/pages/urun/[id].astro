@@ -1528,18 +1528,8 @@ const deepDive = getProductDeepDiveContent(product);
           <span class="nav-brand-name">ES YAŞAM</span>
         </a>
 
-        <!-- Sağ: Paylaşım İkonu -->
-        <div class="nav-right-actions">
-          <button id="nav-share-btn" class="btn-nav-share" aria-label="Sayfayı Paylaş">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="18" cy="5" r="3"></circle>
-              <circle cx="6" cy="12" r="3"></circle>
-              <circle cx="18" cy="19" r="3"></circle>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-            </svg>
-          </button>
-        </div>
+        <!-- Sağ: Boş Flex Dengesi -->
+        <div class="nav-right-actions"></div>
       </div>
     </nav>
 
@@ -1850,6 +1840,8 @@ const deepDive = getProductDeepDiveContent(product);
         else if (index < 0) { currentSlideIndex = slides.length - 1; }
         else { currentSlideIndex = index; }
 
+        window.currentSlideIndex = currentSlideIndex;
+
         slides.forEach(slide => slide.classList.remove('active'));
         if (dots.length > 0) dots.forEach(dot => dot.classList.remove('active'));
         if (thumbs.length > 0) thumbs.forEach(thumb => thumb.classList.remove('active'));
@@ -2055,24 +2047,7 @@ const deepDive = getProductDeepDiveContent(product);
         }
 
         function triggerShare() {
-          const shareData = {
-            title: document.title,
-            text: 'ES Yaşam lüks temizlik formülüyle tanışın. Özellikleri inceleyin ve sipariş verin!',
-            url: window.location.href
-          };
-
-          // If native share is supported (mobile), use it
-          if (navigator.share) {
-            navigator.share(shareData)
-              .catch((err) => {
-                console.log("Native share error or cancelled:", err);
-                // Fallback to custom glassmorphism modal
-                openShareModal();
-              });
-          } else {
-            // Desktop fallback: Open premium sharing modal
-            openShareModal();
-          }
+          openShareModal();
         }
 
         // Connect share buttons (nav-share-btn and floating-share-btn)
