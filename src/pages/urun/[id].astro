@@ -1934,6 +1934,9 @@ const deepDive = getProductDeepDiveContent(product);
         // Slideshow controls
         const prevBtn = document.getElementById('prev-slide-btn');
         const nextBtn = document.getElementById('next-slide-btn');
+        const dots = document.querySelectorAll('.dot');
+        const thumbs = document.querySelectorAll('.thumb-btn');
+
         if (prevBtn) prevBtn.addEventListener('click', () => showSlide(currentSlideIndex - 1));
         if (nextBtn) nextBtn.addEventListener('click', () => showSlide(currentSlideIndex + 1));
 
