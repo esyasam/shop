@@ -239,12 +239,14 @@ const deepDive = getProductDeepDiveContent(product);
         padding: 0;
       }
 
-      body {
+      html, body {
         font-family: 'Outfit', sans-serif;
         background: radial-gradient(circle at top, var(--bg-cream) 0%, var(--bg-cream-dark) 100%);
         color: var(--text-dark);
         min-height: 100vh;
         overflow-x: hidden;
+        max-width: 100%;
+        width: 100%;
         position: relative;
         line-height: 1.5;
         padding-bottom: 4rem;
