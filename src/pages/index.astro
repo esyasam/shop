@@ -72,24 +72,17 @@ function resolveProductImage(image, id) {
     }
   }
 
-  // 3. Resmi bulunmayan ürünler için stok_logo.webp kontrolü ve fallback kullanımı
+  // 3. Resmi bulunmayan ürünler için logo.jpg kontrolü ve fallback kullanımı
   try {
-    const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'stok_logo.webp');
+    const defaultLogoPath = path.join(process.cwd(), 'public', 'images', 'logo.jpg');
     if (fs.existsSync(defaultLogoPath)) {
-      return '/images/stok_logo.webp';
+      return '/images/logo.jpg';
     }
   } catch (e) {
     // ignore
   }
 
-  // 4. Klasik/eski eşleme mantığı (fallback)
-  if (!image) {
-    return `/images/products/${id}/cover.webp`;
-  }
-  if (!image.includes("/")) {
-    return `/images/products/${id}/${image}`;
-  }
-  return image;
+  return '/images/logo.jpg';
 }
 
 /**
@@ -1327,11 +1320,11 @@ function getInstagramDmUrl(productName, customLink) {
           const originalPrice = hasCampaign ? salePriceNum : null;
           
           // Görseli derleme zamanında tespit edilen (data-image) özelliğinden al
-          let resolvedImg = `/images/stok_logo.webp`;
+          let resolvedImg = `/images/logo.jpg`;
           if (card) {
-            resolvedImg = card.getAttribute('data-image') || `/images/stok_logo.webp`;
+            resolvedImg = card.getAttribute('data-image') || `/images/logo.jpg`;
           } else {
-            // Eğer tamamen yeni eklenen bir ürünse, varsayılan olarak ID.webp veya stok_logo'ya yönlendir
+            // Eğer tamamen yeni eklenen bir ürünse, varsayılan olarak ID.webp veya logo.jpg'ye yönlendir
             const imageField = product.image || product.gorsel;
             if (imageField && imageField.trim() !== "") {
               resolvedImg = imageField.includes(',') ? imageField.split(',')[0].trim() : imageField.trim();
@@ -1412,7 +1405,7 @@ function getInstagramDmUrl(productName, customLink) {
                     alt="${product.name}" 
                     class="product-img" 
                     loading="lazy"
-                    onerror="this.onerror=null; this.src='/images/stok_logo.webp';"
+                    onerror="this.onerror=null; this.src='/images/logo.jpg';"
                   />
                 </div>
                 <div class="product-info">

@@ -92,10 +92,10 @@ function getProductImagesList(imageField, productId) {
 
   const allImages = [...localImages, ...externalImages];
   if (allImages.length === 0) {
-    if (fs.existsSync(path.join(publicImagesDir, 'stok_logo.webp'))) {
-      return ['/images/stok_logo.webp'];
+    if (fs.existsSync(path.join(publicImagesDir, 'logo.jpg'))) {
+      return ['/images/logo.jpg'];
     }
-    return [`/images/products/${productId}/cover.webp`];
+    return ['/images/logo.jpg'];
   }
 
   return allImages;
@@ -103,7 +103,7 @@ function getProductImagesList(imageField, productId) {
 
 const localImagesList = getProductImagesList("", product.id);
 const imagesList = getProductImagesList(product.image || product.gorsel, product.id);
-const mainImage = imagesList[0] || `/images/stok_logo.webp`;
+const mainImage = imagesList[0] || `/images/logo.jpg`;
 
 // Çoklu videolar
 function getProductVideosList(videoField) {
@@ -134,7 +134,7 @@ const videosList = getProductVideosList(product.video || product.links);
 
 // Pazarlama Açıklamaları ve Derinlemesine Anlatım
 function getProductDeepDiveContent(product) {
-  if (!product) return getFallbackDeepDiveContent("", "");
+  if (!product) return { badge: "", title: "", subtitle: "", intro: "", usage: "", features: [] };
 
   // Read dynamic fields if they exist
   const badge = product.detailBadge || product.detail_badge || product.detay_badge || product.detayBadge;
@@ -156,80 +156,14 @@ function getProductDeepDiveContent(product) {
     }
   }
 
-  // Get standard hardcoded fallback
-  const fallback = getFallbackDeepDiveContent(product.name || "", product.id || "");
-
-  // Build the deep dive content, merging dynamic fields and fallbacks
   return {
-    badge: badge || fallback.badge || "PREMIUM",
-    title: title || fallback.title || `${product.name} - ES Yaşam Lüks Serisi`,
-    subtitle: subtitle || fallback.subtitle || "Daha Güzel ve Ferah Bir Yaşam İçin Doğadan İlham Alan Lüks Formül",
-    intro: intro || fallback.intro || "ES Yaşam ailesinin lüks standartlarıyla üretilen bu özel formül, evinizde hijyen ve ferahlığı bir araya getiriyor.",
-    usage: usage || fallback.usage || "İlgili yüzeye püskürtün veya nemli bez yardımıyla uygulayın. Hafifçe silerek asil parlaklığı ve derin temizliği ortaya çıkarın.",
-    features: features.length > 0 ? features : (fallback.features || [])
+    badge: badge || "PREMIUM",
+    title: title || "",
+    subtitle: subtitle || "",
+    intro: intro || "",
+    usage: usage || "",
+    features: features
   };
-}
-
-function getFallbackDeepDiveContent(name, id) {
-  const lowercaseName = name.toLowerCase();
-  
-  if (lowercaseName.includes("leke")) {
-    return {
-      title: "Leke Çıkartıcı - Viral Temizlik Mucizesi",
-      subtitle: "Kumaşlarınıza Zarar Vermeden, En Zorlu Lekelere Saniyeler İçinde Veda Edin",
-      intro: "ES Yaşam Leke Çıkartıcı, en inatçı lekeleri bile kökünden çözen özel ve lüks formülüyle temizlik standartlarınızı tamamen değiştiriyor. Kıyafetlerinizden koltuklarınıza, halılarınızdan hassas dokulara kadar her yüzeyde güvenle kullanabileceğiniz bu mucizevi formül, derinlemesine hijyen sunarken lifleri korur.",
-      features: [
-        { title: "Aktif Enzim Teknolojisi", text: "Kahve, çay, yağ, şarap ve çamur gibi en inatçı organik lekeleri saniyeler içinde çözüp kumaştan ayırır." },
-        { title: "Renk ve Doku Koruyucu", text: "Özel formülü sayesinde kumaşların canlı renklerini soldurmaz, dokusuna zarar vermez ve yıpratmaz." },
-        { title: "Zeytin Çiçeği Premium Esansı", text: "Temizlik sonrasında kimyasal kokular yerine evinize hafif, lüks ve taze bir doğallık kokusu yayar." },
-        { title: "Geniş Kullanım Alanı", text: "Kıyafetler, gömlek yakaları, halılar, perdeler, araç koltukları ve tüm döşemelik kumaşlar için mükemmel sonuç sunar." }
-      ],
-      usage: "Lekeli bölgeye doğrudan püskürtün, 1-2 dakika formülün lekeye nüfuz etmesini bekleyin. Ardından nemli bir bezle dairesel hareketlerle silin veya ürünü doğrudan çamaşır makinesinde yıkayın. İnatçı lekeler için işlemi hafifçe fırçalayarak tekrarlayabilirsiniz.",
-      badge: "YÜKSEK ETKİ"
-    };
-  } else if (lowercaseName.includes("sarı") || lowercaseName.includes("yell")) {
-    return {
-      title: "Sarı Güç - Çok Amaçlı Lüks Temizleyici",
-      subtitle: "Doğal Narenciye Yağları ile Yağ ve Kiri Ovalamadan Çözen Üstün Güç",
-      intro: "ES Yaşam Sarı Güç, mutfağınızdan banyonuza kadar evinizin her köşesinde mucizeler yaratan çok amaçlı lüks bir temizleyicidir. Doğal narenciye özlerinin gücüyle zenginleştirilmiş formülü, kurumuş yağları, birikmiş kirleri ve kireç lekelerini ovalamaya gerek kalmadan zahmetsizce söker atar.",
-      features: [
-        { title: "Ultra Yağ Çözücü Formül", text: "Ocak, fırın, aspiratör ve mutfak tezgahlarındaki en ağır, yanmış yağ tabakalarını anında sıvılaştırır." },
-        { title: "Doğal Narenciye Gücü", text: "Gerçek portakal ve limon kabuğu yağları içerir. Doğal asitleriyle yüzeyleri aşındırmadan parlatır." },
-        { title: "Durulama Gerektirmeyen Kolaylık", text: "Uygulandığı yüzeyde yapışkan kalıntı veya iz bırakmaz, durulama süresini yarı yarıya azaltır." },
-        { title: "Evdeki Tüm Yüzeylere Tek Çözüm", text: "Mutfak tezgahlarından PVC pencerelere, bahçe mobilyalarından fayans aralarına kadar çok yönlü kullanım sunar." }
-      ],
-      usage: "Temizlemek istediğiniz yüzeye püskürtün. Ağır yağ ve kirlerde 30-60 saniye bekleyin, ardından temiz bir bezle silin. Parlak ve lekesiz bir görünüm için kuru bir mikrofiber bezle son dokunuşu yapabilirsiniz.",
-      badge: "ÇOK AMAÇLI"
-    };
-  } else if (lowercaseName.includes("mavi") || lowercaseName.includes("blue")) {
-    return {
-      title: "Mavi Güç - Ultra Hijyen ve Parlaklık",
-      subtitle: "Cam, Metal ve Parlak Yüzeylerde Kusursuz Işıltı ve Uzun Süre Toz Tutmama Etkisi",
-      intro: "ES Yaşam Mavi Güç, evinizdeki parlak yüzeyler, camlar, aynalar ve banyo armatürleri için özel olarak geliştirilmiş ultra yoğun bir parlatıcı ve temizleyicidir. Gelişmiş koruyucu bariyer teknolojisi sayesinde yüzeylerin buğulanmasını önler ve tozlanmayı geciktirerek günlerce süren lüks bir ışıltı sunar.",
-      features: [
-        { title: "İzsiz ve Çiziksiz Işıltı", text: "Cam ve aynalarda en ufak bir dalgalanma veya bez izi bırakmadan kristal berraklığında parlaklık sağlar." },
-        { title: "Toz Önleyici Koruyucu Bariyer", text: "Yüzeyde statik elektriklenmeyi engelleyen görünmez bir mikro tabaka oluşturarak tozların tutunmasını geciktirir." },
-        { title: "Su ve Kireç Lekesi Karşıtı", text: "Duşakabin, fayans ve musluklardaki su damlacıklarının ve kirecin tutunmasını engelleyerek kurumasını önler." },
-        { title: "Premium Okyanus Esintisi", text: "Evinize gün boyu süren, ferahlatıcı ve derin lüks bir okyanus tazeliği kokusu kazandırır." }
-      ],
-      usage: "Yüzeye yaklaşık 20 cm mesafeden hafifçe püskürtün. Temiz ve kuru bir cam bezi veya mikrofiber bez yardımıyla dairesel hareketlerle silin. Durulama gerektirmez.",
-      badge: "ULTRA PARLAKLIK"
-    };
-  } else {
-    return {
-      title: `${name} - ES Yaşam Lüks Serisi`,
-      subtitle: "Daha Güzel ve Ferah Bir Yaşam İçin Doğadan İlham Alan Lüks Formül",
-      intro: "ES Yaşam ailesinin lüks standartlarıyla üretilen bu özel formül, evinizde hijyen ve ferahlığı bir araya getiriyor. Doğal bileşenlerin gücünü modern temizlik teknolojisiyle birleştiren ürünümüz, hem ailenizin sağlığını korur hem de evinizde kalıcı ve asil bir hijyen sağlar.",
-      features: [
-        { title: "Organik Bileşenlerle Zengin", text: "İnsan sağlığına zararlı sert kimyasallar barındırmaz, gücünü doğallıktan alır." },
-        { title: "Lüks ve Yoğun Etki", text: "Az miktarda kullanımda bile maksimum temizlik gücü sunar, ekonomiktir." },
-        { title: "Zarif Koku Kartelası", text: "Kalıcı ve hafif esansları ile evinizin havasını uzun süre taze tutar." },
-        { title: "Doğa Dostu Ambalaj", text: "Doğada %100 geri dönüştürülebilir lüks şişe tasarımıyla çevreye duyarlıdır." }
-      ],
-      usage: "İlgili yüzeye püskürtün veya nemli bez yardımıyla uygulayın. Hafifçe silerek asil parlaklığı ve derin temizliği ortaya çıkarın.",
-      badge: "PREMIUM"
-    };
-  }
 }
 
 const deepDive = getProductDeepDiveContent(product);
@@ -1464,9 +1398,9 @@ const deepDive = getProductDeepDiveContent(product);
       </section>
 
       <!-- DERİNLERE INİŞ BÖLÜMÜ (MÜŞTERİ YAZISI) -->
-      <section class="deep-dive-section">
+      <section class="deep-dive-section" style={(deepDive.title || deepDive.subtitle || deepDive.intro || deepDive.usage || deepDive.features.length > 0) ? "" : "display: none;"}>
         <div class="deep-dive-header">
-          <span class="deep-dive-badge">Formül Sırrı</span>
+          <span class="deep-dive-badge">{deepDive.badge || "Formül Sırrı"}</span>
           <h2 class="deep-dive-title">{deepDive.title}</h2>
           <p class="deep-dive-subtitle">{deepDive.subtitle}</p>
         </div>
@@ -2031,75 +1965,28 @@ const deepDive = getProductDeepDiveContent(product);
               }
             }
 
-            // Fallback oluşturucu (JS tarafında da kullanmak için)
-            function getFallbackContent(name) {
-              const lowercaseName = (name || "").toLowerCase();
-              if (lowercaseName.includes("leke")) {
-                return {
-                  title: "Leke Çıkartıcı - Viral Temizlik Mucizesi",
-                  subtitle: "Kumaşlarınıza Zarar Vermeden, En Zorlu Lekelere Saniyeler İçinde Veda Edin",
-                  intro: "ES Yaşam Leke Çıkartıcı, en inatçı lekeleri bile kökünden çözen özel ve lüks formülüyle temizlik standartlarınızı tamamen değiştiriyor. Kıyafetlerinizden koltuklarınıza, halılarınızdan hassas dokulara kadar her yüzeyde güvenle kullanabileceğiniz bu mucizevi formül, derinlemesine hijyen sunarken lifleri korur.",
-                  features: [
-                    { title: "Aktif Enzim Teknolojisi", text: "Kahve, çay, yağ, şarap ve çamur gibi en inatçı organik lekeleri saniyeler içinde çözüp kumaştan ayırır." },
-                    { title: "Renk ve Doku Koruyucu", text: "Özel formülü sayesinde kumaşların canlı renklerini soldurmaz, dokusuna zarar vermez ve yıpratmaz." },
-                    { title: "Zeytin Çiçeği Premium Esansı", text: "Temizlik sonrasında kimyasal kokular yerine evinize hafif, lüks ve taze bir doğallık kokusu yayar." },
-                    { title: "Geniş Kullanım Alanı", text: "Kıyafetler, gömlek yakaları, halılar, perdeler, araç koltukları ve tüm döşemelik kumaşlar için mükemmel sonuç sunar." }
-                  ],
-                  usage: "Lekeli bölgeye doğrudan püskürtün, 1-2 dakika formülün lekeye nüfuz etmesini bekleyin. Ardından nemli bir bezle dairesel hareketlerle silin veya ürünü doğrudan çamaşır makinesinde yıkayın. İnatçı lekeler için işlemi hafifçe fırçalayarak tekrarlayabilirsiniz.",
-                  badge: "YÜKSEK ETKİ"
-                };
-              } else if (lowercaseName.includes("sarı") || lowercaseName.includes("yell")) {
-                return {
-                  title: "Sarı Güç - Çok Amaçlı Lüks Temizleyici",
-                  subtitle: "Doğal Narenciye Yağları ile Yağ ve Kiri Ovalamadan Çözen Üstün Güç",
-                  intro: "ES Yaşam Sarı Güç, mutfağınızdan banyonuza kadar evinizin her köşesinde mucizeler yaratan çok amaçlı lüks bir temizleyicidir. Doğal narenciye özlerinin gücüyle zenginleştirilmiş formülü, kurumuş yağları, birikmiş kirleri ve kireç lekelerini ovalamaya gerek kalmadan zahmetsizce söker atar.",
-                  features: [
-                    { title: "Ultra Yağ Çözücü Formül", text: "Ocak, fırın, aspiratör ve mutfak tezgahlarındaki en ağır, yanmış yağ tabakalarını anında sıvılaştırır." },
-                    { title: "Doğal Narenciye Gücü", text: "Gerçek portakal ve limon kabuğu yağları içerir. Doğal asitleriyle yüzeyleri aşındırmadan parlatır." },
-                    { title: "Durulama Gerektirmeyen Kolaylık", text: "Uygulandığı yüzeyde yapışkan kalıntı veya iz bırakmaz, durulama süresini yarı yarıya azaltır." },
-                    { title: "Evdeki Tüm Yüzeylere Tek Çözüm", text: "Mutfak tezgahlarından PVC pencerelere, bahçe mobilyalarından fayans aralarına kadar çok yönlü kullanım sunar." }
-                  ],
-                  usage: "Temizlemek istediğiniz yüzeye püskürtün. Ağır yağ ve kirlerde 30-60 saniye bekleyin, ardından temiz bir bezle silin. Parlak ve lekesiz bir görünüm için kuru bir mikrofiber bezle son dokunuşu yapabilirsiniz.",
-                  badge: "ÇOK AMAÇLI"
-                };
-              } else if (lowercaseName.includes("mavi") || lowercaseName.includes("blue")) {
-                return {
-                  title: "Mavi Güç - Ultra Hijyen ve Parlaklık",
-                  subtitle: "Cam, Metal ve Parlak Yüzeylerde Kusursuz Işıltı ve Uzun Süre Toz Tutmama Etkisi",
-                  intro: "ES Yaşam Mavi Güç, evinizdeki parlak yüzeyler, camlar, aynalar ve banyo armatürleri için özel olarak geliştirilmiş ultra yoğun bir parlatıcı ve temizleyicidir. Gelişmiş koruyucu bariyer teknolojisi sayesinde yüzeylerin buğulanmasını önler ve tozlanmayı geciktirerek günlerce süren lüks bir ışıltı sunar.",
-                  features: [
-                    { title: "İzsiz ve Çiziksiz Işıltı", text: "Cam ve aynalarda en ufak bir dalgalanma veya bez izi bırakmadan kristal berraklığında parlaklık sağlar." },
-                    { title: "Toz Önleyici Koruyucu Bariyer", text: "Yüzeyde statik elektriklenmeyi engelleyen görünmez bir mikro tabaka oluşturarak tozların tutunmasını geciktirir." },
-                    { title: "Su ve Kireç Lekesi Karşıtı", text: "Duşakabin, fayans ve musluklardaki su damlacıklarının ve kirecin tutunmasını engelleyerek kurumasını önler." },
-                    { title: "Premium Okyanus Esintisi", text: "Evinize gün boyu süren, ferahlatıcı ve derin lüks bir okyanus tazeliği kokusu kazandırır." }
-                  ],
-                  usage: "Yüzeye yaklaşık 20 cm mesafeden hafifçe püskürtün. Temiz ve kuru bir cam bezi veya mikrofiber bez yardımıyla dairesel hareketlerle silin. Durulama gerektirmez.",
-                  badge: "ULTRA PARLAKLIK"
-                };
-              } else {
-                return {
-                  title: `${product.name || ""} - ES Yaşam Lüks Serisi`,
-                  subtitle: "Daha Güzel ve Ferah Bir Yaşam İçin Doğadan İlham Alan Lüks Formül",
-                  intro: "ES Yaşam ailesinin lüks standartlarıyla üretilen bu özel formül, evinizde hijyen ve ferahlığı bir araya getiriyor. Doğal bileşenlerin gücünü modern temizlik teknolojisiyle birleştiren ürünümüz, hem ailenizin sağlığını korur hem de evinizde kalıcı ve asil bir hijyen sağlar.",
-                  features: [
-                    { title: "Organik Bileşenlerle Zengin", text: "İnsan sağlığına zararlı sert kimyasallar barındırmaz, gücünü doğallıktan alır." },
-                    { title: "Lüks ve Yoğun Etki", text: "Az miktarda kullanımda bile maksimum temizlik gücü sunar, ekonomiktir." },
-                    { title: "Zarif Koku Kartelası", text: "Kalıcı ve hafif esansları ile evinizin havasını uzun süre taze tutar." },
-                    { title: "Doğa Dostu Ambalaj", text: "Doğada %100 geri dönüştürülebilir lüks şişe tasarımıyla çevreye duyarlıdır." }
-                  ],
-                  usage: "İlgili yüzeye püskürtün veya nemli bez yardımıyla uygulayın. Hafifçe silerek asil parlaklığı ve derin temizliği ortaya çıkarın.",
-                  badge: "PREMIUM"
-                };
-              }
+            const finalBadge = badge || "PREMIUM";
+            const finalTitle = title || "";
+            const finalSubtitle = subtitle || "";
+            const finalIntro = intro || "";
+            const finalUsage = usage || "";
+            const finalFeatures = features;
+
+            // Deep dive bölümü görünürlük kontrolü
+            const ddSection = document.querySelector('.deep-dive-section');
+            if (ddSection) {
+              const hasContent = finalTitle || finalSubtitle || finalIntro || finalUsage || finalFeatures.length > 0;
+              ddSection.style.display = hasContent ? '' : 'none';
             }
 
-            const fallback = getFallbackContent(product.name);
-            const finalBadge = badge || fallback.badge || "PREMIUM";
-            const finalTitle = title || fallback.title || `${product.name} - ES Yaşam Lüks Serisi`;
-            const finalSubtitle = subtitle || fallback.subtitle || "";
-            const finalIntro = intro || fallback.intro || "";
-            const finalUsage = usage || fallback.usage || "";
-            const finalFeatures = features.length > 0 ? features : (fallback.features || []);
+            // UI Güncelleme: Deep Dive Badge
+            const ddBadgeEl = document.querySelector('.deep-dive-badge');
+            if (ddBadgeEl) {
+              const badgeText = finalBadge || "Formül Sırrı";
+              if (ddBadgeEl.textContent !== badgeText) {
+                ddBadgeEl.textContent = badgeText;
+              }
+            }
 
             // UI Güncelleme: Detail Badge (Sağ detay kartındaki)
             const detailBadgeEl = document.querySelector('.detail-badge');
