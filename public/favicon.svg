@@ -1,9 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128">
-    <path d="M50.4 78.5a75.1 75.1 0 0 0-28.5 6.9l24.2-65.7c.7-2 1.9-3.2 3.4-3.2h29c1.5 0 2.7 1.2 3.4 3.2l24.2 65.7s-11.6-7-28.5-7L67 45.5c-.4-1.7-1.6-2.8-2.9-2.8-1.3 0-2.5 1.1-2.9 2.7L50.4 78.5Zm-1.1 28.2Zm-4.2-20.2c-2 6.6-.6 15.8 4.2 20.2a17.5 17.5 0 0 1 .2-.7 5.5 5.5 0 0 1 5.7-4.5c2.8.1 4.3 1.5 4.7 4.7.2 1.1.2 2.3.2 3.5v.4c0 2.7.7 5.2 2.2 7.4a13 13 0 0 0 5.7 4.9v-.3l-.2-.3c-1.8-5.6-.5-9.5 4.4-12.8l1.5-1a73 73 0 0 0 3.2-2.2 16 16 0 0 0 6.8-11.4c.3-2 .1-4-.6-6l-.8.6-1.6 1a37 37 0 0 1-22.4 2.7c-5-.7-9.7-2-13.2-6.2Z" />
-    <style>
-        path { fill: #000; }
-        @media (prefers-color-scheme: dark) {
-            path { fill: #FFF; }
-        }
-    </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Circular gold border with cream background -->
+  <circle cx="256" cy="256" r="240" fill="#FAF8F5" stroke="#d4af37" stroke-width="10"/>
+  
+  <!-- Stylized Sycamore/Çınar Tree Structure -->
+  <!-- Main Trunk and Roots in Deep Teal #0F4E56 (matching the new logo's border) -->
+  <path d="M256 410 C256 350 230 320 200 290 C190 280 180 270 180 250 C180 230 200 220 220 240 C240 260 250 280 256 310 C262 280 272 260 292 240 C312 220 332 230 332 250 C332 270 322 280 312 290 C282 320 256 350 256 410 Z" fill="#0F4E56"/>
+  <path d="M180 410 C210 405 302 405 332 410 C340 420 310 425 256 425 C202 425 182 420 180 410 Z" fill="#0F4E56"/>
+
+  <!-- Left Leaf Cluster in Brand Olive Green #556B2F -->
+  <path d="M170 220 C130 220 110 180 130 150 C110 120 140 90 170 110 C180 80 210 80 220 110 C240 90 260 120 250 150 C260 180 240 220 210 210 C190 230 180 230 170 220 Z" fill="#556B2F" opacity="0.95"/>
+
+  <!-- Right Leaf Cluster in Lush Emerald Green #1F7C6B (matching the new logo's vibrant leaves) -->
+  <path d="M342 220 C302 220 282 180 302 150 C282 120 312 90 342 110 C352 80 382 80 392 110 C412 90 432 120 422 150 C432 180 412 220 382 210 C362 230 352 230 342 220 Z" fill="#1F7C6B" opacity="0.95"/>
+
+  <!-- Top Center Leaf Cluster in Vibrant Green #28A745 -->
+  <path d="M256 150 C216 150 206 110 226 80 C216 50 246 20 276 40 C286 10 316 10 326 40 C346 20 366 50 356 80 C366 110 346 150 326 140 C306 160 276 160 256 150 Z" fill="#28A745"/>
+
+  <!-- Premium Gold Accents #d4af37 (Gold leaf details) -->
+  <!-- Left Gold Leaf -->
+  <path d="M155 170 C140 170 140 155 155 145 C170 145 170 170 155 170 Z" fill="#d4af37"/>
+  <!-- Right Gold Leaf -->
+  <path d="M357 170 C342 170 347 155 357 145 C372 145 372 170 357 170 Z" fill="#d4af37"/>
+  <!-- Top Gold Leaf -->
+  <path d="M256 100 C246 100 246 85 256 75 C266 85 266 100 256 100 Z" fill="#d4af37"/>
 </svg>
