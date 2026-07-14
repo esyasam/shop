@@ -954,32 +954,32 @@
   }
 
   function addToCart(id, name, price, image, quantity = 1) {
-    const existing = cart.find(item => item.id === id);
+    const existing = cart.find(item => String(item.id) === String(id));
     if (existing) {
       existing.quantity += quantity;
     } else {
-      cart.push({ id, name, price: parseFloat(price), image, quantity });
+      cart.push({ id: String(id), name, price: parseFloat(price), image, quantity });
     }
     saveCart();
     showToast(`"${name}" sepete eklendi!`, 'success');
   }
 
   function updateItemQty(id, change) {
-    const item = cart.find(item => item.id === id);
+    const item = cart.find(item => String(item.id) === String(id));
     if (!item) return;
 
     item.quantity += change;
     if (item.quantity <= 0) {
-      cart = cart.filter(item => item.id !== id);
+      cart = cart.filter(item => String(item.id) !== String(id));
     }
     saveCart();
     renderCart();
   }
 
   function removeItem(id) {
-    const item = cart.find(item => item.id === id);
+    const item = cart.find(item => String(item.id) === String(id));
     if (!item) return;
-    cart = cart.filter(item => item.id !== id);
+    cart = cart.filter(item => String(item.id) !== String(id));
     saveCart();
     renderCart();
     showToast(`"${item.name}" sepetten çıkarıldı.`, 'info');
