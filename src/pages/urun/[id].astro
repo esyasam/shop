@@ -2034,14 +2034,14 @@ const deepDive = getProductDeepDiveContent(product);
 
         function openShareModal() {
           if (shareModal) {
-            shareModal.classList.add('show');
+            shareModal.classList.add('active');
             document.body.classList.add('modal-open');
           }
         }
 
         function closeShareModal() {
           if (shareModal) {
-            shareModal.classList.remove('show');
+            shareModal.classList.remove('active');
             document.body.classList.remove('modal-open');
           }
         }
