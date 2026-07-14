@@ -332,7 +332,9 @@ const deepDive = getProductDeepDiveContent(product);
       }
 
       .nav-logo-ring {
-        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 48px;
         height: 48px;
       }
@@ -343,17 +345,6 @@ const deepDive = getProductDeepDiveContent(product);
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid var(--brand-gold);
-      }
-
-      .nav-logo-dashed {
-        position: absolute;
-        top: -3px;
-        left: -3px;
-        right: -3px;
-        bottom: -3px;
-        border: 1.5px dashed rgba(212, 175, 55, 0.35);
-        border-radius: 50%;
-        animation: rotate 40s linear infinite;
       }
 
       .nav-brand-name {
@@ -1523,7 +1514,6 @@ const deepDive = getProductDeepDiveContent(product);
         <a href="/" class="nav-logo-area">
           <div class="nav-logo-ring">
             <img src="/images/logo.jpg" alt="ES Yaşam Logo" class="nav-logo-img" />
-            <div class="nav-logo-dashed"></div>
           </div>
           <span class="nav-brand-name">ES YAŞAM</span>
         </a>
