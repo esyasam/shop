@@ -1430,7 +1430,7 @@ Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
     // Copy to clipboard
     navigator.clipboard.writeText(orderMessage)
       .then(() => {
-        showToast('Sipariş detaylarınız kopyalandı! Instagram DM kutusuna yönlendiriliyorsunuz...', 'success');
+        showToast('📋 Sipariş bilgileriniz kopyalandı! Instagram kuralları gereği mesaj otomatik dolmaz. Lütfen açılacak sohbete YAPIŞTIR (Paste) diyerek gönderin.', 'success', 8000);
 
         // Reset cart
         cart = [];
@@ -1440,11 +1440,10 @@ Web siteniz üzerinden siparişimi bu detaylarla oluşturmak istiyorum!`;
         document.getElementById('cart-drawer').classList.remove('show');
         document.body.classList.remove('modal-open');
 
-        // Open Instagram DM
+        // Open Instagram DM after a descriptive delay allowing user to read instructions
         setTimeout(() => {
-          const baseIntro = `Merhaba, web siteniz üzerinden sipariş bilgilerimi oluşturdum ve kopyaladım. Şimdi buraya yapıştırıp siparişimi başlatıyorum!`;
-          window.open(`https://ig.me/m/es_yasam?text=${encodeURIComponent(baseIntro)}`, '_blank');
-        }, 1500);
+          window.open('https://ig.me/m/es_yasam', '_blank');
+        }, 3000);
       })
       .catch(err => {
         console.error('Kopyalama hatası:', err);
