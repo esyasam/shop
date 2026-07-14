@@ -915,6 +915,213 @@ function getInstagramDmUrl(productName, customLink) {
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
+
+      /* PAYLAŞIM BUTONLARI, MODAL VE TOAST STİLLERİ */
+      .floating-share-btn {
+        position: fixed;
+        bottom: 2rem;
+        left: 2rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(250, 248, 245, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        color: var(--brand-gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 999;
+        box-shadow: 0 8px 32px rgba(44, 37, 32, 0.12);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .floating-share-btn:hover {
+        background: var(--brand-gold);
+        color: white;
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 12px 24px rgba(212, 175, 55, 0.25);
+      }
+
+      .share-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(44, 37, 32, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .share-modal.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .share-modal-card {
+        background: rgba(250, 248, 245, 0.95);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        border-radius: 24px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 90%;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(44, 37, 32, 0.15);
+        transform: translateY(20px);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+      }
+
+      .share-modal.active .share-modal-card {
+        transform: translateY(0);
+      }
+
+      .share-modal-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+      }
+
+      .share-modal-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+      }
+
+      .share-channels {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .share-channel-btn {
+        background: white;
+        border: 1px solid rgba(212, 175, 55, 0.2);
+        border-radius: 16px;
+        padding: 1rem 0.5rem;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .share-channel-btn:hover {
+        border-color: var(--brand-gold);
+        background: rgba(212, 175, 55, 0.05);
+        transform: translateY(-3px);
+      }
+
+      .share-channel-icon {
+        font-size: 1.5rem;
+      }
+
+      .share-channel-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      .share-copy-area {
+        display: flex;
+        background: white;
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        border-radius: 12px;
+        padding: 0.35rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .share-copy-input {
+        border: none;
+        background: transparent;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        padding-left: 0.5rem;
+        width: 75%;
+        outline: none;
+        text-overflow: ellipsis;
+      }
+
+      .share-copy-btn {
+        background: var(--brand-gold);
+        border: none;
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .share-copy-btn:hover {
+        background: var(--brand-gold-hover);
+        transform: translateY(-1px);
+      }
+
+      .share-modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.3s ease;
+      }
+
+      .share-modal-close:hover {
+        background: rgba(44, 37, 32, 0.05);
+        color: var(--text-dark);
+      }
+
+      .share-toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: rgba(44, 37, 32, 0.95);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        z-index: 3000;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      }
+
+      .share-toast.active {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
@@ -1450,6 +1657,142 @@ function getInstagramDmUrl(productName, customLink) {
         if (window.cart && typeof updatePageProductButtons === 'function') {
           updatePageProductButtons(window.cart);
         }
+      });
+    </script>
+
+    <!-- FLOATING SHARE BUTTON -->
+    <button id="floating-share-btn" class="floating-share-btn" aria-label="Sayfayı Paylaş" title="Sayfayı Paylaş">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3"></circle>
+        <circle cx="6" cy="12" r="3"></circle>
+        <circle cx="18" cy="19" r="3"></circle>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+      </svg>
+    </button>
+
+    <!-- SHARE MODAL -->
+    <div id="share-modal" class="share-modal">
+      <div class="share-modal-card">
+        <button id="share-modal-close" class="share-modal-close" aria-label="Kapat">×</button>
+        <h3 class="share-modal-title">Mağazayı Paylaş</h3>
+        <p class="share-modal-subtitle">Sevdiklerinizle veya sosyal medyada paylaşarak doğallığı yayın!</p>
+        
+        <div class="share-channels">
+          <!-- WhatsApp -->
+          <button class="share-channel-btn" data-channel="whatsapp">
+            <span class="share-channel-icon">🟢</span>
+            <span class="share-channel-label">WhatsApp</span>
+          </button>
+          <!-- Telegram -->
+          <button class="share-channel-btn" data-channel="telegram">
+            <span class="share-channel-icon">🔵</span>
+            <span class="share-channel-label">Telegram</span>
+          </button>
+          <!-- Twitter -->
+          <button class="share-channel-btn" data-channel="twitter">
+            <span class="share-channel-icon">⚫</span>
+            <span class="share-channel-label">Twitter/X</span>
+          </button>
+        </div>
+        
+        <div class="share-copy-area">
+          <input type="text" id="share-link-input" class="share-copy-input" readonly />
+          <button id="share-copy-btn" class="share-copy-btn">Kopyala</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="share-toast" class="share-toast">
+      <span>✨ Bağlantı Panoya Kopyalandı!</span>
+    </div>
+
+    <!-- SOCIAL SHARING SYSTEM LOGIC -->
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', () => {
+        const shareModal = document.getElementById('share-modal');
+        const shareModalClose = document.getElementById('share-modal-close');
+        const shareLinkInput = document.getElementById('share-link-input');
+        const shareCopyBtn = document.getElementById('share-copy-btn');
+        const shareToast = document.getElementById('share-toast');
+        const floatingShareBtn = document.getElementById('floating-share-btn');
+
+        // Set share link input value to current URL
+        if (shareLinkInput) {
+          shareLinkInput.value = window.location.href;
+        }
+
+        function openShareModal() {
+          if (shareModal) {
+            shareModal.classList.add('active');
+            document.body.classList.add('modal-open');
+          }
+        }
+
+        function closeShareModal() {
+          if (shareModal) {
+            shareModal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+          }
+        }
+
+        if (floatingShareBtn) {
+          floatingShareBtn.addEventListener('click', openShareModal);
+        }
+
+        if (shareModalClose) {
+          shareModalClose.addEventListener('click', closeShareModal);
+        }
+
+        if (shareModal) {
+          shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) {
+              closeShareModal();
+            }
+          });
+        }
+
+        if (shareCopyBtn && shareLinkInput) {
+          shareCopyBtn.addEventListener('click', () => {
+            shareLinkInput.select();
+            shareLinkInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(shareLinkInput.value)
+              .then(() => {
+                if (shareToast) {
+                  shareToast.classList.add('active');
+                  setTimeout(() => {
+                    shareToast.classList.remove('active');
+                  }, 2500);
+                }
+              })
+              .catch(err => {
+                console.error('Failed to copy text: ', err);
+              });
+          });
+        }
+
+        const channelBtns = document.querySelectorAll('.share-channel-btn');
+        channelBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const channel = btn.getAttribute('data-channel');
+            const pageUrl = encodeURIComponent(window.location.href);
+            const pageText = encodeURIComponent(document.title + " - ES Yaşam lüks temizlik formüllerini keşfedin! ✨");
+            let shareUrl = '';
+
+            if (channel === 'whatsapp') {
+              shareUrl = `https://api.whatsapp.com/send?text=${pageText}%20${pageUrl}`;
+            } else if (channel === 'telegram') {
+              shareUrl = `https://t.me/share/url?url=${pageUrl}&text=${pageText}`;
+            } else if (channel === 'twitter') {
+              shareUrl = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageText}`;
+            }
+
+            if (shareUrl) {
+              window.open(shareUrl, '_blank', 'noopener,noreferrer');
+            }
+          });
+        });
       });
     </script>
   </body>
