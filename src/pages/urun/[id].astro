@@ -1,30 +1,34 @@
 ---
-// ES Yaşam - Bağımsız Premium Ürün Detay Sayfası (SSR Modu)
+// ES Yaşam - Bağımsız Premium Ürün Detay Sayfası (Static Modu)
 import CartDrawer from '../../components/CartDrawer.astro';
 
-// Vite tabanlı dosya varlığı kontrolü (Cloudflare Workers/SSR uyumlu)
-const localImageFiles = import.meta.glob('/public/images/**/*.{webp,jpg,jpeg,png,gif}', { eager: true });
-const localImageKeys = Object.keys(localImageFiles).map(key => key.split('/').pop());
+export async function getStaticPaths() {
+  const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
+  const url = `${databaseUrl}/products.json`;
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      const data = await response.json();
+      if (data) {
+        const products = Object.values(data);
+        return products.map((product: any) => ({
+          params: { id: String(product.id) },
+          props: { product }
+        }));
+      }
+    }
+  } catch (error) {
+    console.error("getStaticPaths hatası:", error);
+  }
+  return [];
+}
 
 const { id } = Astro.params;
+const { product } = Astro.props;
 
-const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
-const url = `${databaseUrl}/products/${id}.json`;
-
-let product = null;
-try {
-  const response = await fetch(url);
-  if (response.ok) {
-    product = await response.json();
-  }
-} catch (error) {
-  console.error("Firebase veritabanından ürün çekilirken hata oluştu:", error);
-}
-
-// Ürün bulunamadıysa ana sayfaya yönlendir
-if (!product) {
-  return Astro.redirect('/');
-}
+// Vite tabanlı dosya varlığı kontrolü (Static/SSG uyumlu)
+const localImageFiles = import.meta.glob('/public/images/**/*.{webp,jpg,jpeg,png,gif}', { eager: true });
+const localImageKeys = Object.keys(localImageFiles).map(key => key.split('/').pop());
 
 // Fiyat ayarlamaları
 const campaignPriceNum = parseFloat(product.campaignPrice);

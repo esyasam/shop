@@ -2,15 +2,20 @@
 // ES Yaşam - Premium Tek Sayfalık E-Ticaret Vitrini (Instagram Satış Sayfası Tasarımı)
 import CartDrawer from '../components/CartDrawer.astro';
 
-// Vite tabanlı dosya varlığı kontrolü (Cloudflare Workers/SSR uyumlu)
-const localImageFiles = import.meta.glob('/public/images/**/*.{webp,jpg,jpeg,png,gif}', { eager: true });
-const localImageKeys = Object.keys(localImageFiles).map(key => key.split('/').pop());
+let localImageKeys = [];
+let products = [];
+let dbError = false;
+
+try {
+  // Vite tabanlı dosya varlığı kontrolü (Static/SSG uyumlu)
+  const localImageFiles = import.meta.glob('/public/images/**/*.{webp,jpg,jpeg,png,gif}', { eager: true });
+  localImageKeys = Object.keys(localImageFiles).map(key => key.split('/').pop());
+} catch (e) {
+  console.error("Görsel listesi yüklenirken hata oluştu:", e);
+}
 
 const databaseUrl = "https://esyasam77-default-rtdb.europe-west1.firebasedatabase.app";
 const url = `${databaseUrl}/products.json`;
-
-let products = [];
-let dbError = false;
 
 try {
   const response = await fetch(url);
